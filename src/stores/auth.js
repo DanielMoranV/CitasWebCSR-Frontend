@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { sigin, currentUser,updateAccessUser } from '../api';
+import { sigin, currentUser, updateAccessUser } from '../api';
 //import useResponse from '../composables/useResponse';
 export const useAuthStore = defineStore({
     id: 'auth',
@@ -51,8 +51,7 @@ export const useAuthStore = defineStore({
         },
         async currentUser() {
             try {
-                const { data } = await currentUser();
-                this.user = data;
+                await currentUser();
                 this.sessionUser = true;
                 this.role = this.user.role.name;
             } catch (error) {
@@ -61,13 +60,17 @@ export const useAuthStore = defineStore({
                 this.sessionUser = false;
                 this.role = 'Invitado';
             }
-        }
+        },
         async updateAccessUser(payload) {
             try {
-                const username = this.user.dni
-                const { data } = await updateAccessUser(username,payload);
+                const username = this.user.username;
+                console.log(username);
+                console.log(this.user);
+                const updatePassword = { password: payload };
+                const { data } = await updateAccessUser(username, updatePassword);
+                return data.count;
             } catch (error) {
-                
+                console.log(error);
             }
         }
     }
