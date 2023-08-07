@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
 
@@ -10,6 +10,15 @@ const calendarValue = ref(null);
 const loading = ref(false);
 const password = ref('');
 const password1 = ref('');
+const dataUser = reactive({
+    documentType: '',
+    dni: '',
+    name: '',
+    surnames: '',
+    phone: '',
+    email: '',
+    address: ''
+});
 const updatePassword = async () => {
     loading.value = true;
     // Verificar si el correo electrónico y la contraseña son campos requeridos
