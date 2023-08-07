@@ -1,0 +1,72 @@
+/* eslint-disable prettier/prettier */
+import axios from './axios';
+
+// Accesos
+/**
+ * @url POST /access
+ * @since 1.0
+ */
+
+export const sigin = (payload) => axios.post('/access', payload);
+
+/**
+ * @url POST /access:username
+ * @since 1.0
+ */
+export const createAccessUser = (username, payload) => axios.post(`/access/${username}`, payload);
+
+/**
+ * @url GET /access
+ * @since 1.0
+ */
+export const fetchAccess = () => axios.get('/access');
+
+/**
+ * @url GET /access:username
+ * @since 1.0
+ */
+export const getAccessUser = (username, payload) => axios.get(`/access/${username}`, payload);
+
+/**
+ * @url PUT /access:username
+ * @since 1.0
+ */
+export const updateAccessUser = (username, payload) => axios.put(`/access/${username}`, payload);
+
+// Usuarios
+/**
+ * @url GET /users
+ * @since 1.0
+ */
+export const fetchUsers = () => axios.get('/users');
+
+/**
+ * @url PUT /users/:dni
+ * @since 1.0
+ */
+export const updateUser = (dni, payload) => axios.put(`/users/${dni}`, payload);
+/*
+
+/**
+ * @url POST /users
+ * @since 1.0
+ */
+export const createUser = (payload) => axios.post('/users', payload);
+
+/**
+ * @url GET /users/:id
+ * @since 1.0
+ */
+export const getUser = (dni) => axios.get(`/users/${dni}`);
+
+/**
+ * @url DELETE /users/:id
+ * @since 1.0
+ */
+export const deleteUser = (dni) => axios.delete(`/users/${dni}`);
+
+/**
+ * @url GET /users/currentuser
+ * @since 1.0
+ */
+export const currentUser = () => axios.get('/users/currentuser');
