@@ -51,7 +51,12 @@ export const useAuthStore = defineStore({
         },
         async currentUser() {
             try {
-                await currentUser();
+                const { data } = await currentUser();
+                //const token = this.user.token;
+                const email = data.user.email;
+                const phone = data.user.phone;
+                this.user.user.email = email;
+                this.user.user.phone = phone;
                 this.sessionUser = true;
                 this.role = this.user.role.name;
             } catch (error) {

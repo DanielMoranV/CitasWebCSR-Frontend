@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import AppMenuItem from './AppMenuItem.vue';
 import { useAuthStore } from '../stores/auth';
 
-const userStore = useAuthStore();
+const authStore = useAuthStore();
 const model = ref([
     {
         label: 'Citas Medicas',
@@ -29,9 +29,9 @@ const model = ref([
 ]);
 
 onMounted(async () => {
-    await userStore.currentUser();
-    if (userStore.sessionUser) {
-        const role = userStore.role;
+    await authStore.currentUser();
+    if (authStore.sessionUser) {
+        const role = authStore.role;
 
         // Filter items based on the user's role
         model.value = model.value.map((section) => {

@@ -2,9 +2,9 @@
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import CustomerService from '@/service/CustomerService';
 import { ref, onBeforeMount, watch, onMounted, reactive } from 'vue';
-import { useDataUserStore } from '../../../stores/dataUser';
+import { useDataauthStore } from '../../../stores/dataUser';
 import { fetchUsers } from '../../../api';
-const dataUserStore = useDataUserStore();
+const dataauthStore = useDataauthStore();
 const medicalTable = ref(null);
 const filters1 = ref(null);
 const loading1 = ref(null);
@@ -23,7 +23,7 @@ async function fetchData() {
 
 // Observar cambios en la propiedad dataUser del store
 watch(
-    () => dataUserStore.dataUser,
+    () => dataauthStore.dataUser,
     (newDataUser) => {
         // Actualizar users.value con los nuevos datos de usuario
         users.value = newDataUser;
@@ -57,8 +57,8 @@ onBeforeMount(() => {
 });
 onMounted(async () => {
     fetchData();
-    await dataUserStore.getUsers();
-    users.value = dataUserStore.dataUser;
+    await dataauthStore.getUsers();
+    users.value = dataauthStore.dataUser;
     console.log(users.value[0]);
 });
 

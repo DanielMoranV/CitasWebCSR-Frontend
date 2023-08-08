@@ -12,7 +12,7 @@ const dataUser = reactive({
     password: ''
 });
 
-const userStore = useAuthStore();
+const authStore = useAuthStore();
 const login = async () => {
     // Verificar si el correo electrónico y la contraseña son campos requeridos
     if (!dataUser.username || !dataUser.password) {
@@ -27,13 +27,13 @@ const login = async () => {
     if (dataUser.password.length < 6) {
         return toast.add({ severity: 'warn', summary: 'La contraseña debe tener al menos 6 caracteres', life: 3000 });
     }
-    await userStore.login(dataUser);
-    if (userStore.sessionUser) {
+    await authStore.login(dataUser);
+    if (authStore.sessionUser) {
         // Mostrar el toast
         toast.add({ severity: 'success', summary: 'Validación Correcta Bienvenido', life: 3000 });
         setTimeout(() => router.push('/profile'), 2000);
     } else {
-        switch (userStore.msg) {
+        switch (authStore.msg) {
             case 'dni no encontrado':
                 toast.add({ severity: 'warn', summary: 'Usuario no registrado', life: 3000 });
                 break;
@@ -41,7 +41,7 @@ const login = async () => {
                 toast.add({ severity: 'warn', summary: 'Error de contraseña', life: 3000 });
                 break;
             default:
-                console.log('defecto', userStore.msg);
+                console.log('defecto', authStore.msg);
                 toast.add({ severity: 'error', summary: 'Ocurrió un error en el servidor intentelo más tarde.', life: 3000 });
                 break;
         }

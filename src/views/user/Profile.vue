@@ -1,12 +1,11 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
-const userStore = useAuthStore();
+const authStore = useAuthStore();
 
-const calendarValue = ref(null);
 const loading = ref(false);
 const password = ref('');
 const password1 = ref('');
@@ -17,41 +16,42 @@ const dataUser = reactive({
     surnames: '',
     phone: '',
     email: '',
-    address: ''
+    address: '',
+    birthDate: ''
 });
+const showMessage = (severity, summary) => {
+    loading.value = false;
+    toast.add({ severity, summary, life: 3000 });
+};
 const updatePassword = async () => {
     loading.value = true;
-    // Verificar si el correo electrónico y la contraseña son campos requeridos
+
     if (!password.value || !password1.value) {
-        loading.value = false;
-        return toast.add({ severity: 'warn', summary: 'Por favor complete los campos requeridos', life: 3000 });
-    }
-    // Verificar si las contraseñas son iguales
-    if (password.value != password1.value) {
-        loading.value = false;
-        return toast.add({ severity: 'warn', summary: 'Las contraseñas no coinciden', life: 3000 });
+        showMessage('warn', 'Por favor complete los campos requeridos');
+    } else if (password.value != password1.value) {
+        showMessage('warn', 'Las contraseñas no coinciden');
+    } else if (/\s/.test(password.value)) {
+        showMessage('warn', 'Los campos no pueden contener espacios en blanco');
+    } else if (password.value.length < 6) {
+        showMessage('warn', 'La contraseña debe tener al menos 6 caracteres');
+    } else {
+        const response = await authStore.updateAccessUser(password.value);
+        if (response == 1) {
+            toast.add({ severity: 'success', summary: 'Contraseña actualizada', life: 4000 });
+            password.value = '';
+            password1.value = '';
+        }
     }
 
-    // Verificar si los campos contienen espacios en blanco
-    if (/\s/.test(password.value)) {
-        loading.value = false;
-        return toast.add({ severity: 'warn', summary: 'Los campos no pueden contener espacios en blanco', life: 3000 });
-    }
-
-    // Verificar si la contraseña tiene al menos 6 caracteres
-    if (password.value.length < 6) {
-        loading.value = false;
-        return toast.add({ severity: 'warn', summary: 'La contraseña debe tener al menos 6 caracteres', life: 3000 });
-    }
-    const response = await userStore.updateAccessUser(password.value);
-    if (response == 1) {
-        toast.add({ severity: 'success', summary: 'Contraseña actualizada', life: 4000 });
-        password.value = '';
-        password1.value = '';
-
-        loading.value = false;
-    }
+    loading.value = false;
 };
+
+onMounted(async () => {
+    await authStore.currentUser();
+    const userData = authStore.user.user;
+
+    Object.assign(dataUser, userData);
+});
 </script>
 <template>
     <div className="card">
@@ -63,24 +63,24 @@ const updatePassword = async () => {
             <div class="card p-fluid">
                 <h5>Perfil</h5>
                 <div class="field">
-                    <label for="dni">DNI</label>
-                    <InputText id="dni" type="text" :disabled="true" />
+                    <label for="dni">{{ dataUser.documentType.toUpperCase() }}</label>
+                    <InputText id="dni" type="text" :disabled="true" :v-model="dataUser.dni" :modelValue="dataUser.dni" />
                 </div>
                 <div class="field">
                     <label for="name">Nombre</label>
-                    <InputText id="name" type="text" :disabled="true" />
+                    <InputText id="name" type="text" :disabled="true" :v-model="dataUser.name" :modelValue="dataUser.name + ' ' + dataUser.surnames" />
                 </div>
                 <div class="field">
                     <label for="email">Email</label>
-                    <InputText id="email" type="text" />
+                    <InputText id="email" type="text" v-model="dataUser.email" :modelValue="dataUser.email" />
                 </div>
                 <div class="field">
                     <label for="city">Fecha de Nacimiento</label>
-                    <Calendar :showIcon="true" :showButtonBar="true" v-model="calendarValue" :disabled="true"></Calendar>
+                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :disabled="true" :modelValue="dataUser.birthDate"></Calendar>
                 </div>
                 <div class="field">
                     <label for="phone">Teléfono</label>
-                    <InputText id="phone" type="text" />
+                    <InputText id="phone" type="text" v-model="dataUser.phone" />
                 </div>
                 <Button label="Modificar" icon="pi pi-user" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="load"></Button>
             </div>

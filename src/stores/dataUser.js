@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import { createUser, fetchUsers, getUser, updateUser, deleteUser } from '../api';
 
-export const useDataUserStore = defineStore('dataUserStore', {
+export const useDataauthStore = defineStore('dataauthStore', {
     state: () => ({
         dataUser: [],
         loadingDataUser: false
