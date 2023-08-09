@@ -23,6 +23,14 @@ const showMessage = (severity, summary) => {
     loading.value = false;
     toast.add({ severity, summary, life: 3000 });
 };
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
 const updatePassword = async () => {
     loading.value = true;
 
@@ -35,7 +43,8 @@ const updatePassword = async () => {
     } else if (password.value.length < 6) {
         showMessage('warn', 'La contraseña debe tener al menos 6 caracteres');
     } else {
-        const response = await authStore.updateAccessUser(password.value);
+        const payload = { password: password.value };
+        const response = await authStore.updateAccessUser(payload);
         if (response == 1) {
             toast.add({ severity: 'success', summary: 'Contraseña actualizada', life: 4000 });
             password.value = '';
@@ -45,12 +54,25 @@ const updatePassword = async () => {
 
     loading.value = false;
 };
+const updateDataUser = async () => {
+    loading.value = true;
+    const response = await authStore.updateDataUser(dataUser);
+    if (response == 1) {
+        toast.add({ severity: 'success', summary: 'Contraseña actualizada', life: 4000 });
+        password.value = '';
+        password1.value = '';
+    }
+    loading.value = false;
+};
 
 onMounted(async () => {
     await authStore.currentUser();
     const userData = authStore.user.user;
-
     Object.assign(dataUser, userData);
+
+    // Formatear Fecha y hora
+    const birthDate = formatDate(dataUser.birthDate);
+    dataUser.birthDate = birthDate;
 });
 </script>
 <template>
@@ -76,13 +98,13 @@ onMounted(async () => {
                 </div>
                 <div class="field">
                     <label for="city">Fecha de Nacimiento</label>
-                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :disabled="true" :modelValue="dataUser.birthDate"></Calendar>
+                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :modelValue="dataUser.birthDate"></Calendar>
                 </div>
                 <div class="field">
                     <label for="phone">Teléfono</label>
                     <InputText id="phone" type="text" v-model="dataUser.phone" />
                 </div>
-                <Button label="Modificar" icon="pi pi-user" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="load"></Button>
+                <Button label="Modificar" icon="pi pi-user" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="updateDataUser"></Button>
             </div>
         </div>
         <div class="col-12 md:col-6">
