@@ -54,6 +54,12 @@ export const updateUser = (dni, payload) => axios.put(`/users/${dni}`, payload);
 export const createUser = (payload) => axios.post('/users', payload);
 
 /**
+ * @url POST /users/patients
+ * @since 1.0
+ */
+export const createPatients = (payload) => axios.post('/users/patients', payload);
+
+/**
  * @url GET /users/:id
  * @since 1.0
  */

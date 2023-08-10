@@ -31,6 +31,7 @@ const login = async () => {
     if (authStore.sessionUser) {
         // Mostrar el toast
         toast.add({ severity: 'success', summary: 'Validación Correcta Bienvenido', life: 3000 });
+
         setTimeout(() => router.push('/profile'), 2000);
     } else {
         switch (authStore.msg) {

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients } from '../api';
 
 export const useDataauthStore = defineStore('dataauthStore', {
     state: () => ({
@@ -25,6 +25,16 @@ export const useDataauthStore = defineStore('dataauthStore', {
         async addUsers(payload) {
             try {
                 const { data } = await createUser(payload);
+                this.dataUser = data;
+            } catch (error) {
+                console.log(error);
+            } finally {
+                console.log('Finalizado');
+            }
+        },
+        async addPatients(payload) {
+            try {
+                const { data } = await createPatients(payload);
                 this.dataUser = data;
             } catch (error) {
                 console.log(error);

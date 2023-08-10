@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
+import { dformat } from '../../utils/day';
 
 const toast = useToast();
 const authStore = useAuthStore();
@@ -23,14 +24,6 @@ const showMessage = (severity, summary) => {
     loading.value = false;
     toast.add({ severity, summary, life: 3000 });
 };
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-}
 const updatePassword = async () => {
     loading.value = true;
 
@@ -68,10 +61,11 @@ const updateDataUser = async () => {
 onMounted(async () => {
     await authStore.currentUser();
     const userData = authStore.user.user;
+    console.log('userData:', userData);
     Object.assign(dataUser, userData);
 
     // Formatear Fecha y hora
-    const birthDate = formatDate(dataUser.birthDate);
+    const birthDate = dformat(dataUser.birthDate, 'DD MMMM YYYY');
     dataUser.birthDate = birthDate;
 });
 </script>
