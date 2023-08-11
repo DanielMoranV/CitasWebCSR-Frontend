@@ -61,7 +61,6 @@ const updateDataUser = async () => {
 onMounted(async () => {
     await authStore.currentUser();
     const userData = authStore.user.user;
-    console.log('userData:', userData);
     Object.assign(dataUser, userData);
 
     // Formatear Fecha y hora

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, watch } from 'vue';
 import { useDataauthStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
@@ -9,6 +9,18 @@ const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 const authDataStore = useDataauthStore();
+// Observa cambios en la sesión del usuario
+watch(
+    () => authStore.sessionUser,
+    async (newSession) => {
+        if (newSession) {
+            // La sesión del usuario ha cambiado, realiza acciones aquí
+            await authStore.currentUser();
+            //console.log('La sesión del usuario ha cambiado signin:', newSession);
+        }
+        //console.log('La sesión del usuario ha cambiado signin else:', newSession);
+    }
+);
 const sexItems = ref([
     { name: 'Masculino', code: 'Masculino' },
     { name: 'Femenino', code: 'Femenino' }
@@ -47,7 +59,6 @@ const signinUser = async () => {
     if (authStore.sessionUser) {
         // Mostrar el toast
         toast.add({ severity: 'success', summary: 'Validación Correcta Bienvenido', life: 3000 });
-        await authStore.currentUser();
         //window.location.reload();
         setTimeout(() => router.push('/profile'), 2000);
     }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
@@ -27,6 +27,18 @@ onMounted(async () => {
     getEssentialData();
     bindOutsideClickListener();
 });
+// Observa cambios en la sesión del usuario
+watch(
+    () => authStore.sessionUser,
+    async (newSession) => {
+        if (newSession) {
+            // La sesión del usuario ha cambiado, realiza acciones aquí
+            await authStore.currentUser();
+            getEssentialData();
+            //console.log('La sesión del usuario ha cambiado topbar:', newSession);
+        }
+    }
+);
 
 onBeforeUnmount(() => {
     unbindOutsideClickListener();

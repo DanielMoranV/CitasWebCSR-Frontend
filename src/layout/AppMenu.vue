@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import AppMenuItem from './AppMenuItem.vue';
 import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
-const model = ref([
+
+const defaultMenuModel = [
     {
         label: 'Citas Medicas',
         items: [
@@ -13,7 +14,6 @@ const model = ref([
             { label: 'Agendar Cita', icon: 'pi pi-fw pi-calendar-plus', to: '/quotes', roles: ['Paciente'] }
         ]
     },
-
     {
         label: 'Admisión',
         items: [{ label: 'Turnos Medicós', icon: 'pi pi-fw pi-list', to: '/shifts', roles: ['Admisionista'] }]
@@ -26,32 +26,36 @@ const model = ref([
         label: 'Administración',
         items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard', roles: ['Administrador'] }]
     }
-]);
+];
+
+const model = ref([]);
+
+function updateMenuModel() {
+    const userRole = authStore.sessionUser ? authStore.role : 'Invitado';
+
+    model.value = defaultMenuModel
+        .map((section) => ({
+            ...section,
+            items: section.items.filter((item) => item.roles.includes(userRole))
+        }))
+        .filter((section) => section.items.length > 0);
+}
 
 onMounted(async () => {
     await authStore.currentUser();
-    if (authStore.sessionUser) {
-        const role = authStore.role;
-
-        // Filter items based on the user's role
-        model.value = model.value.map((section) => {
-            return {
-                ...section,
-                items: section.items.filter((item) => item.roles.includes(role))
-            };
-        });
-    } else {
-        // Filter items for 'Invitado' role
-        model.value = model.value.map((section) => {
-            return {
-                ...section,
-                items: section.items.filter((item) => item.roles.includes('Invitado'))
-            };
-        });
-    }
-    // Remove sections with no items after filtering
-    model.value = model.value.filter((section) => section.items.length > 0);
+    updateMenuModel();
 });
+
+watch(
+    () => authStore.sessionUser,
+    async (newSession) => {
+        model.value = defaultMenuModel;
+        if (newSession) {
+            await authStore.currentUser();
+            updateMenuModel();
+        }
+    }
+);
 </script>
 
 <template>
