@@ -20,7 +20,8 @@ export const useAuthStore = defineStore({
         },
         getEsential(state) {
             return {
-                name: `${state.user.user.name} ${state.user.user.surnames}`
+                name: `${state.user.user.name} ${state.user.user.surnames}`,
+                role: state.user.role.name
             };
         },
         token(state) {

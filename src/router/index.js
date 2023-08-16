@@ -57,6 +57,11 @@ const router = createRouter({
                     path: '/shifts',
                     name: 'shifts',
                     component: () => import('@/views/admission/Shifts.vue')
+                },
+                {
+                    path: '/users',
+                    name: 'users',
+                    component: () => import('@/views/admin/Users.vue')
                 }
             ]
         },
