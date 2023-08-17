@@ -24,7 +24,10 @@ const defaultMenuModel = [
     },
     {
         label: 'Administración',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard', roles: ['Administrador'] }]
+        items: [
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard', roles: ['Administrador'] },
+            { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-users', to: '/users', roles: ['Administrador'] }
+        ]
     }
 ];
 

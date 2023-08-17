@@ -16,6 +16,7 @@ const getEssentialData = () => {
         if (authStore.sessionUser) {
             const userData = authStore.getEsential;
             dataUser.value = userData;
+            console.log(dataUser.value);
         }
         console.log(authStore.sessionUser);
     } catch (error) {
@@ -102,7 +103,14 @@ const isOutsideClicked = (event) => {
         </button>
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <h5 class="mt-2">{{ dataUser.name }}</h5>
+            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
+                <i class="pi pi-user"></i>
+                <span>{{ dataUser.name }}</span>
+            </button>
+            <button @click="onSettingsClick()" class="p-link layout-topbar-button">
+                <i class="pi pi-cog"></i>
+                <span>{{ dataUser.role }}</span>
+            </button>
 
             <button @click="signOutClick()" class="p-link layout-topbar-button">
                 <i class="pi pi-sign-out"></i>
