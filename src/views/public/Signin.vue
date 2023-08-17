@@ -48,7 +48,7 @@ const dataUser = reactive({
 const loading = ref(false);
 const signinUser = async () => {
     loading.value = true;
-    //await authDataStore.addPatients(dataUser);
+    await authDataStore.addPatients(dataUser);
     const loginUser = {
         username: dataUser.dni,
         password: dataUser.dni
