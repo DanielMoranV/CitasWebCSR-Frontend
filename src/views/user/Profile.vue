@@ -49,12 +49,18 @@ const updatePassword = async () => {
 };
 const updateDataUser = async () => {
     loading.value = true;
-    const response = await authStore.updateDataUser(dataUser);
-    if (response == 1) {
-        toast.add({ severity: 'success', summary: 'Contraseña actualizada', life: 4000 });
-        password.value = '';
-        password1.value = '';
-    }
+    console.log(dataUser);
+    const payload = {
+        email: dataUser.email,
+        phone: dataUser.phone
+    };
+    const response = await authStore.updateDataUser(payload);
+    console.log('response', response);
+    // if (response == 1) {
+    //     toast.add({ severity: 'success', summary: 'Datos actualizados correctamente', life: 4000 });
+    //     password.value = '';
+    //     password1.value = '';
+    // }
     loading.value = false;
 };
 
@@ -91,7 +97,7 @@ onMounted(async () => {
                 </div>
                 <div class="field">
                     <label for="city">Fecha de Nacimiento</label>
-                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :modelValue="dataUser.birthDate"></Calendar>
+                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :modelValue="dataUser.birthDate" :disabled="true"></Calendar>
                 </div>
                 <div class="field">
                     <label for="phone">Teléfono</label>

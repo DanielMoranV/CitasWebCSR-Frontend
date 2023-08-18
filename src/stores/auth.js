@@ -79,10 +79,10 @@ export const useAuthStore = defineStore({
         },
         async updateDataUser(payload) {
             try {
-                const username = this.user.username;
+                const dni = this.user.username;
                 console.log('payload :', payload);
-                const { data } = await updateUser(username, payload);
-                return data.count;
+                const { data } = await updateUser(dni, payload);
+                return data;
             } catch (error) {
                 console.log(error);
             }

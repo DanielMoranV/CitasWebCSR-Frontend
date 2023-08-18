@@ -16,9 +16,7 @@ const getEssentialData = () => {
         if (authStore.sessionUser) {
             const userData = authStore.getEsential;
             dataUser.value = userData;
-            console.log(dataUser.value);
         }
-        console.log(authStore.sessionUser);
     } catch (error) {
         console.log(error);
     }
@@ -86,6 +84,10 @@ const isOutsideClicked = (event) => {
 
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
+const onProfileClick = () => {
+    topbarMenuActive.value = false;
+    router.push('/profile');
+};
 </script>
 
 <template>
@@ -103,7 +105,7 @@ const isOutsideClicked = (event) => {
         </button>
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
+            <button @click="onProfileClick()" class="p-link layout-topbar-button">
                 <i class="pi pi-user"></i>
                 <span>{{ dataUser.name }}</span>
             </button>
