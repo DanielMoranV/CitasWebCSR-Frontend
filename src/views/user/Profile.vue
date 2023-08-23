@@ -123,4 +123,26 @@ onMounted(async () => {
         </div>
     </div>
 </template>
-<style></style>
+<style>
+.twitter {
+    background: linear-gradient(to left, var(--blue-400) 50%, var(--blue-500) 50%);
+    background-size: 200% 100%;
+    background-position: right bottom;
+    transition: background-position 0.5s ease-out;
+    border-color: var(--blue-500);
+    padding: 0;
+    display: flex;
+    align-items: stretch;
+
+    &:enabled:hover {
+        background: linear-gradient(to left, var(--blue-400) 50%, var(--blue-500) 50%);
+        background-size: 200% 100%;
+        background-position: left bottom;
+        border-color: var(--blue-500);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 1px var(--blue-200);
+    }
+}
+</style>

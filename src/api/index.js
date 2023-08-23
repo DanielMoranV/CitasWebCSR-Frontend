@@ -76,3 +76,36 @@ export const deleteUser = (dni) => axios.delete(`/users/${dni}`);
  * @since 1.0
  */
 export const currentUser = () => axios.get('/users/currentuser');
+
+// Colaboradores
+
+/**
+ * @url GET /collaborator
+ * @since 1.0
+ */
+export const fetchCollaborators = () => axios.get('/collaborators');
+
+/**
+ * @url PUT /collaborator/:dni
+ * @since 1.0
+ */
+export const updateCollaborator = (dni, payload) => axios.put(`/collaborator/${dni}`, payload);
+/*
+
+/**
+ * @url POST /collaborator
+ * @since 1.0
+ */
+export const createCollaborator = (payload) => axios.post('/collaborator', payload);
+
+/**
+ * @url GET /collaborator/:id
+ * @since 1.0
+ */
+export const getCollaborator = (dni) => axios.get(`/collaborator/${dni}`);
+
+/**
+ * @url DELETE /collaborator/:id
+ * @since 1.0
+ */
+export const deleteCollaborator = (dni) => axios.delete(`/collaborator/${dni}`);

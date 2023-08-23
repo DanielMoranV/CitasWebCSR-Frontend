@@ -45,6 +45,11 @@ export const useAuthStore = defineStore({
             }
         },
         async logout() {
+            if (this.user?.username) {
+                const payload = { status: 'offline' };
+                await updateAccessUser(this.user.username, payload);
+            }
+
             this.user = null;
             this.sessionUser = false;
             this.role = 'Invitado';
@@ -61,7 +66,6 @@ export const useAuthStore = defineStore({
                 this.sessionUser = true;
                 this.role = this.user.role.name;
             } catch (error) {
-                //console.log(error);
                 this.user = null;
                 this.sessionUser = false;
                 this.role = 'Invitado';
@@ -70,7 +74,6 @@ export const useAuthStore = defineStore({
         async updateAccessUser(payload) {
             try {
                 const username = this.user.username;
-                console.log('payload :', payload);
                 const { data } = await updateAccessUser(username, payload);
                 return data.count;
             } catch (error) {
@@ -80,12 +83,12 @@ export const useAuthStore = defineStore({
         async updateDataUser(payload) {
             try {
                 const dni = this.user.username;
-                console.log('payload :', payload);
                 const { data } = await updateUser(dni, payload);
                 return data;
             } catch (error) {
                 console.log(error);
             }
         }
+        // buscar si el dni existe
     }
 });

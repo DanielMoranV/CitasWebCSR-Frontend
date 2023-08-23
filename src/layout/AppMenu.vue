@@ -11,7 +11,8 @@ const defaultMenuModel = [
         items: [
             { label: 'Registarse', icon: 'pi pi-fw pi-user', to: '/signin', roles: ['Invitado'] },
             { label: 'Perfil', icon: 'pi pi-fw pi-user', to: '/profile', roles: ['Administrador', 'Admisionista', 'Médico', 'Paciente'] },
-            { label: 'Agendar Cita', icon: 'pi pi-fw pi-calendar-plus', to: '/quotes', roles: ['Paciente'] }
+            { label: 'Agendar Cita', icon: 'pi pi-fw pi-calendar-plus', to: '/quotes', roles: ['Paciente'] },
+            { label: 'Seguimiento', icon: 'pi pi-fw pi-chart-line', to: '/tracking', roles: ['Paciente'] }
         ]
     },
     {
@@ -26,7 +27,7 @@ const defaultMenuModel = [
         label: 'Administración',
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard', roles: ['Administrador'] },
-            { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-users', to: '/users', roles: ['Administrador'] }
+            { label: 'Colaboradores', icon: 'pi pi-fw pi-users', to: '/users', roles: ['Administrador'] }
         ]
     }
 ];

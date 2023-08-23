@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, reactive, watch } from 'vue';
-import { useDataauthStore } from '../../stores/dataUser';
+import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
@@ -8,7 +8,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
-const authDataStore = useDataauthStore();
+const dataUserStore = useDataUserStore();
 // Observa cambios en la sesión del usuario
 watch(
     () => authStore.sessionUser,
@@ -48,7 +48,8 @@ const dataUser = reactive({
 const loading = ref(false);
 const signinUser = async () => {
     loading.value = true;
-    await authDataStore.addPatients(dataUser);
+
+    await dataUserStore.addPatients(dataUser);
     const loginUser = {
         username: dataUser.dni,
         password: dataUser.dni
@@ -60,7 +61,7 @@ const signinUser = async () => {
         // Mostrar el toast
         toast.add({ severity: 'success', summary: 'Validación Correcta Bienvenido', life: 3000 });
         //window.location.reload();
-        setTimeout(() => router.push('/profile'), 2000);
+        setTimeout(() => router.push('/quotes'), 2000);
     }
     setTimeout(() => (loading.value = false), 1000);
 };

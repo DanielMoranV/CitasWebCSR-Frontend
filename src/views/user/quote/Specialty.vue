@@ -2,9 +2,9 @@
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import CustomerService from '@/service/CustomerService';
 import { ref, onBeforeMount, watch, onMounted, reactive } from 'vue';
-import { useDataauthStore } from '../../../stores/dataUser';
+import { useDataUserStore } from '../../../stores/dataUser';
 import { fetchUsers } from '../../../api';
-const dataauthStore = useDataauthStore();
+const dataUserStore = useDataUserStore();
 const medicalTable = ref(null);
 const filters1 = ref(null);
 const loading1 = ref(null);
@@ -23,7 +23,7 @@ async function fetchData() {
 
 // Observar cambios en la propiedad dataUser del store
 watch(
-    () => dataauthStore.dataUser,
+    () => dataUserStore.dataUser,
     (newDataUser) => {
         // Actualizar users.value con los nuevos datos de usuario
         users.value = newDataUser;
@@ -57,9 +57,9 @@ onBeforeMount(() => {
 });
 onMounted(async () => {
     fetchData();
-    await dataauthStore.getUsers();
-    users.value = dataauthStore.dataUser;
-    console.log(users.value[0]);
+    await dataUserStore.getUsers();
+    users.value = dataUserStore.dataUser;
+    console.log(users.value);
 });
 
 const initFilters1 = () => {
@@ -170,8 +170,8 @@ const formatDate = (value) => {
                 <InputNumber v-model="filterModel.value" mode="currency" currency="USD" locale="en-US" />
             </template>
         </Column>
-        <Column header="Agendar" bodyClass="text-center" style="min-width: 8rem">
-            <template> </template>
+        <Column header="Acción" bodyClass="text-center" style="min-width: 8rem">
+            <template #body><Button icon="pi pi-check" class="p-button-rounded p-button-success mr-2 mb-2" /> </template>
         </Column>
     </DataTable>
 </template>

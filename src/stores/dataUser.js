@@ -1,19 +1,34 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators } from '../api';
 
-export const useDataauthStore = defineStore('dataauthStore', {
+export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
         dataUser: [],
         loadingDataUser: false
     }),
     actions: {
+        async getCollaborators() {
+            if (this.dataUser.length === 0) {
+                this.loadingDataUser = true;
+                try {
+                    const { data } = await fetchCollaborators();
+                    this.dataUser = data;
+                    return this.dataUser;
+                } catch (error) {
+                    console.log(error);
+                } finally {
+                    this.loadingDataUser = false;
+                }
+            }
+        },
         async getUsers() {
             if (this.dataUser.length === 0) {
                 this.loadingDataUser = true;
                 try {
                     const { data } = await fetchUsers();
                     this.dataUser = data;
+                    return this.dataUser;
                 } catch (error) {
                     console.log(error);
                 } finally {
