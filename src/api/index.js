@@ -109,3 +109,11 @@ export const getCollaborator = (dni) => axios.get(`/collaborator/${dni}`);
  * @since 1.0
  */
 export const deleteCollaborator = (dni) => axios.delete(`/collaborator/${dni}`);
+
+// Medicos
+
+/**
+ * @url GET /doctors
+ * @since 1.0
+ */
+export const getInfoDoctors = () => axios.get('/infodoctors');

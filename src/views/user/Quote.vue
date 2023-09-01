@@ -2,12 +2,8 @@
 import { ref } from 'vue';
 const nestedRouteItems = ref([
     {
-        label: 'Especialidad',
-        to: '/quotes'
-    },
-    {
         label: 'Agendar Cita',
-        to: '/quote/appointment'
+        to: '/quotes'
     },
     {
         label: 'Pago',
@@ -24,7 +20,7 @@ const nestedRouteItems = ref([
     <div class="card card-w-title">
         <h5>Registro de Citas medicas</h5>
         <p>Steps and TabMenu are integrated with the same child routes.</p>
-        <Steps :model="nestedRouteItems" :readonly="false" />
+        <Steps :model="nestedRouteItems" :readonly="true" />
         <router-view />
     </div>
 </template>

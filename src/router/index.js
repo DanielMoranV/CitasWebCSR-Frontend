@@ -31,11 +31,7 @@ const router = createRouter({
                     component: () => import('@/views/user/Quote.vue'),
                     children: [
                         {
-                            path: '/quotes',
-                            component: () => import('@/views/user/quote/Specialty.vue')
-                        },
-                        {
-                            path: '/quote/appointment',
+                            path: '/quotes/',
                             component: () => import('@/views/user/quote/Appointment.vue')
                         },
                         {
@@ -51,7 +47,7 @@ const router = createRouter({
                 {
                     path: '/tracking',
                     name: 'tracking',
-                    component: () => import('@/views//Tracking.vue')
+                    component: () => import('@/views/Tracking.vue')
                 },
                 {
                     path: '/attentions',

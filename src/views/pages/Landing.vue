@@ -1,7 +1,12 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
-import { computed } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import AppConfig from '@/layout/AppConfig.vue';
+import { useDataDoctorStore } from '../../stores/dataDoctor';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const dataDoctorStore = useDataDoctorStore();
 
 const { layoutConfig } = useLayout();
 
@@ -13,6 +18,26 @@ const smoothScroll = (id) => {
 
 const logoUrl = computed(() => {
     return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
+});
+const infoDoctors = ref([]);
+const infoDoctor = reactive({
+    medico: '',
+    cmp: '',
+    specialization: '',
+    service: '',
+    price: ''
+});
+const appointment = (cmp) => {
+    // Aquí puedes realizar cualquier lógica adicional antes de redirigirte, si es necesario.}
+    console.log(cmp);
+
+    // Redirige a la página "/signin"
+    router.push('/signin');
+};
+onMounted(async () => {
+    const data = await dataDoctorStore.getInfoDoctors();
+    infoDoctors.value = data;
+    console.log(infoDoctors.value);
 });
 </script>
 
@@ -179,43 +204,27 @@ const logoUrl = computed(() => {
                 </div>
             </div>
 
-            <div id="highlights" class="py-4 px-4 lg:px-8 mx-0 my-6 lg:mx-8">
-                <div class="text-center">
-                    <h2 class="text-900 font-normal mb-2">Nuestros médicos</h2>
-                    <span class="text-600 text-2xl">Contamos con los mejores profesionales para cuidar de ti y tu familia. ¡Agenda una cita hoy mismo!</span>
+            <div id="highlights" class="py-4 px-4 lg:px-8 mt-5 mx-0 lg:mx-8">
+                <div class="grid justify-content-center">
+                    <div class="col-12 text-center mt-8 mb-4">
+                        <h2 class="text-900 font-normal mb-2">Nuestros médicos</h2>
+                        <span class="text-600 text-2xl">Contamos con los mejores profesionales para cuidar de ti y tu familia. ¡Agenda una cita hoy mismo!</span>
+                    </div>
+
+                    <div v-for="doctor in infoDoctors" :key="doctor.cmp" class="col-12 md:col-12 lg:col-3 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
+                        <div
+                            style="height: 250px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))"
+                        >
+                            <div class="p-3 surface-card h-full" style="border-radius: 8px">
+                                <Button label="Agendar Cita" icon="fa-solid fa-user-doctor text-2xl text-white-700" class="col-12 p-button-success mr-2 mb-2" @click="appointment(doctor.cmp)"></Button>
+                                <h5 class="mb-2 text-900">{{ doctor.medico }}</h5>
+                                <p class="text-600">CMP : {{ doctor.cmp }}</p>
+                                <span class="text-600">Especialidad : {{ doctor.specialization }}</span>
+                                <p class="text-600">Consulta Médica : S/ {{ doctor.price }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- <div class="grid mt-8 pb-2 md:pb-8">
-                    <div class="flex justify-content-center col-12 lg:col-6 bg-purple-100 p-0 flex-order-1 lg:flex-order-0" style="border-radius: 8px">
-                        <img src="/media/images/landing/mockup.svg" class="w-11" alt="mockup mobile" />
-                    </div>
-
-                    <div class="col-12 lg:col-6 my-auto flex flex-column lg:align-items-end text-center lg:text-right">
-                        <div class="flex align-items-center justify-content-center bg-purple-200 align-self-center lg:align-self-end" style="width: 4.2rem; height: 4.2rem; border-radius: 10px">
-                            <i class="pi pi-fw pi-mobile text-5xl text-purple-700"></i>
-                        </div>
-                        <h2 class="line-height-1 text-900 text-4xl font-normal">Congue Quisque Egestas</h2>
-                        <span class="text-700 text-2xl line-height-3 ml-0 md:ml-2" style="max-width: 650px"
-                            >Lectus arcu bibendum at varius vel pharetra vel turpis nunc. Eget aliquet nibh praesent tristique magna sit amet purus gravida. Sit amet mattis vulputate enim nulla aliquet.</span
-                        >
-                    </div>
-                </div> -->
-
-                <!-- <div class="grid my-8 pt-2 md:pt-8">
-                    <div class="col-12 lg:col-6 my-auto flex flex-column text-center lg:text-left lg:align-items-start">
-                        <div class="flex align-items-center justify-content-center bg-yellow-200 align-self-center lg:align-self-start" style="width: 4.2rem; height: 4.2rem; border-radius: 10px">
-                            <i class="pi pi-fw pi-desktop text-5xl text-yellow-700"></i>
-                        </div>
-                        <h2 class="line-height-1 text-900 text-4xl font-normal">Celerisque Eu Ultrices</h2>
-                        <span class="text-700 text-2xl line-height-3 mr-0 md:mr-2" style="max-width: 650px"
-                            >Adipiscing commodo elit at imperdiet dui. Viverra nibh cras pulvinar mattis nunc sed blandit libero. Suspendisse in est ante in. Mauris pharetra et ultrices neque ornare aenean euismod elementum nisi.</span
-                        >
-                    </div>
-
-                    <div class="flex justify-content-end flex-order-1 sm:flex-order-2 col-12 lg:col-6 bg-yellow-100 p-0" style="border-radius: 8px">
-                        <img src="/media/images/landing/mockup-desktop.svg" class="w-11" alt="mockup" />
-                    </div>
-                </div> -->
             </div>
 
             <!-- <div id="pricing" class="py-4 px-4 lg:px-8 my-2 md:my-4">

@@ -48,6 +48,7 @@ const dataUser = reactive({
 const loading = ref(false);
 const signinUser = async () => {
     loading.value = true;
+    console.log(dataUser);
 
     await dataUserStore.addPatients(dataUser);
     const loginUser = {
@@ -118,8 +119,8 @@ onMounted(() => {
                 <InputText id="address" type="text" v-model="dataUser.address" />
             </div>
             <div class="field col-12 md:col-3">
-                <label for="city">Fecha de Nacimiento</label>
-                <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate"></Calendar>
+                <label for="birthDate">Fecha de Nacimiento</label>
+                <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" dateFormat="dd/mm/yy"></Calendar>
             </div>
             <div class="field col-12 md:col-3">
                 <label for="sex">Sexo</label>
