@@ -66,6 +66,9 @@ const signinUser = async () => {
     }
     setTimeout(() => (loading.value = false), 1000);
 };
+const loginUser = () => {
+    setTimeout(() => router.push('/auth/login'), 500);
+};
 onMounted(() => {
     //console.log(radioValue);
 });
@@ -136,13 +139,9 @@ onMounted(() => {
             </div>
         </div>
         <Toast />
-        <div class="buttoncalendar"><Button label="Agendar Cita" icon="pi pi-calendar" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="signinUser"></Button></div>
+
+        <Button label="Agendar Cita" icon="pi pi-calendar" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="signinUser"></Button>
+        <Button label="Iniciar Sesión" icon="pi pi-user" class="p-button-info col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="loginUser"></Button>
     </div>
 </template>
-<style>
-.buttoncalendar {
-    margin-top: 2em;
-    display: flex;
-    justify-content: right;
-}
-</style>
+<style></style>
