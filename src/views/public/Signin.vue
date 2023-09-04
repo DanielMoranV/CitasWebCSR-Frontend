@@ -141,7 +141,7 @@ onMounted(() => {
         <Toast />
 
         <Button label="Agendar Cita" icon="pi pi-calendar" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="signinUser"></Button>
-        <Button label="Iniciar Sesión" icon="pi pi-user" class="p-button-info col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="loginUser"></Button>
+        <Button label="Ya estas registrado ?" icon="pi pi-user" class="p-button-info p-button-text mr-2 mb-2" @click="loginUser"></Button>/>
     </div>
 </template>
 <style></style>
