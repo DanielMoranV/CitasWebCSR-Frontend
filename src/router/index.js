@@ -47,7 +47,7 @@ const router = createRouter({
                 {
                     path: '/tracking',
                     name: 'tracking',
-                    component: () => import('@/views/Tracking.vue')
+                    component: () => import('@/views/user/Tracking.vue')
                 },
                 {
                     path: '/attentions',

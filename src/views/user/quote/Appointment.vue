@@ -103,6 +103,10 @@ onMounted(() => {
                 <AutoComplete placeholder="Hora disponible" id="dd" :dropdown="true" v-model="selectedAutoValue" :suggestions="autoFilteredValue" @complete="searchCountry($event)" field="name" />
             </div>
         </div>
+        <div class="field grid">
+            <label for="hour" class="col-12 mb-2 md:col-2 md:mb-0">Precio Consulta</label>
+            <div class="col-12 md:col-10"><InputText id="price" type="text" :disabled="true" /></div>
+        </div>
     </div>
     <Button label="Siguiente" icon="pi pi-arrow-right" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="clickNext"></Button>
 </template>
