@@ -1,6 +1,9 @@
 <script setup>
 import { useDataDoctorStore } from '../../../stores/dataDoctor';
 import { onMounted, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 import CountryService from '@/service/CountryService';
 const countryService = new CountryService();
@@ -51,6 +54,13 @@ const searchCountry = (event) => {
         }
     }, 250);
 };
+const loading = ref(false);
+const clickNext = async () => {
+    loading.value = true;
+
+    setTimeout(() => router.push('/quote/payment'), 2000);
+    setTimeout(() => (loading.value = false), 1000);
+};
 
 onMounted(() => {
     countryService.getCountries().then((data) => (autoValue.value = data));
@@ -94,6 +104,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <Button label="Siguiente" icon="pi pi-arrow-right" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="clickNext"></Button>
 </template>
 <style>
 .available-date:hover {
