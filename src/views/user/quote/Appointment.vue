@@ -58,7 +58,7 @@ const loading = ref(false);
 const clickNext = async () => {
     loading.value = true;
 
-    setTimeout(() => router.push('/quote/payment'), 2000);
+    setTimeout(() => router.push('/quote/payment'), 1000);
     setTimeout(() => (loading.value = false), 1000);
 };
 
