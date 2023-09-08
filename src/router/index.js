@@ -24,6 +24,11 @@ const router = createRouter({
                     name: 'signin',
                     component: () => import('@/views/public/Signin.vue')
                 },
+                {
+                    path: '/dependents',
+                    name: 'dependents',
+                    component: () => import('@/views/user/Dependents.vue')
+                },
 
                 {
                     path: '/quotes',
