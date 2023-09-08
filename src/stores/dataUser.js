@@ -5,7 +5,8 @@ import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
         dataUser: [],
-        loadingDataUser: false
+        loadingDataUser: false,
+        msg: null
     }),
     actions: {
         async getCollaborators() {
@@ -49,12 +50,12 @@ export const useDataUserStore = defineStore('datauserStore', {
         },
         async addPatients(payload) {
             try {
-                const { data } = await createPatients(payload);
+                const { data, message } = await createPatients(payload);
                 this.dataUser = data;
+                this.msg = message;
             } catch (error) {
                 console.log(error);
-            } finally {
-                console.log('Finalizado');
+                this.msg = error.message;
             }
         },
         async profileUser(dni) {

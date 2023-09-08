@@ -46,28 +46,79 @@ const dataUser = reactive({
 });
 
 const loading = ref(false);
+
+const showToast = (severity, summary, life) => {
+    toast.add({ severity, summary, life });
+};
+
+const validateRequiredFields = () => {
+    const requiredFields = ['documentType', 'dni', 'name', 'surnames', 'phone', 'email', 'address', 'birthDate', 'sex', 'civilStatus'];
+
+    for (const field of requiredFields) {
+        if (!dataUser[field]) {
+            showToast('error', 'Por favor, complete todos los campos obligatorios.', 3000);
+            return false; // Detener la función si falta algún dato
+        }
+    }
+
+    return true; // Todos los campos están completos
+};
+
+const validateAge = () => {
+    const today = new Date();
+    const birthDate = new Date(dataUser.birthDate);
+    const age = today.getFullYear() - birthDate.getFullYear();
+
+    if (age < 18) {
+        showToast('error', 'Debes ser mayor de edad para registrarte. Registra a tu padre o apoderado', 5000);
+        return false; // Detener la función si es menor de edad
+    }
+
+    return true; // Es mayor de edad
+};
+
 const signinUser = async () => {
+    if (!validateRequiredFields() || !validateAge()) {
+        return; // Detener la función si no se cumplen las validaciones
+    }
+
     loading.value = true;
     console.log(dataUser);
 
     await dataUserStore.addPatients(dataUser);
+
+    if (dataUserStore.msg === 'Violación de la restricción única.') {
+        showToast('error', 'DNI registrado anteriormente!', 5000);
+        loading.value = false;
+        return;
+    }
+
     const loginUser = {
         username: dataUser.dni,
         password: dataUser.dni
     };
+
     console.log(loginUser);
     await authStore.login(loginUser);
-    console.log(authStore.msg);
+    console.log('mensaje user', dataUserStore.msg);
+
     if (authStore.sessionUser) {
-        // Mostrar el toast
-        toast.add({ severity: 'success', summary: 'Validación Correcta Bienvenido', life: 3000 });
-        //window.location.reload();
-        setTimeout(() => router.push('/quotes'), 2000);
+        showToast('success', 'Validación Correcta Bienvenido', 3000);
+        //setTimeout(() => router.push('/quotes'), 2000);
     }
+
     setTimeout(() => (loading.value = false), 1000);
 };
 const loginUser = () => {
     setTimeout(() => router.push('/auth/login'), 500);
+};
+const displayConfirmation = ref(false);
+const openConfirmation = () => {
+    displayConfirmation.value = true;
+};
+
+const closeConfirmation = () => {
+    displayConfirmation.value = false;
 };
 onMounted(() => {
     //console.log(radioValue);
@@ -142,6 +193,16 @@ onMounted(() => {
 
         <Button label="Agendar Cita" icon="pi pi-calendar" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="signinUser"></Button>
         <Button label="Ya estas registrado ?" icon="pi pi-user" class="p-button-info col-12 md:col-3 p-button-text mr-2 mb-2" @click="loginUser"></Button>
+        <Dialog header="Confirmación" v-model:visible="displayConfirmation" :style="{ width: '350px' }" :modal="true">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                <span>¿El paciente es menor de edad o dependiente?</span>
+            </div>
+            <template #footer>
+                <Button label="No" icon="pi pi-times" @click="closeConfirmation" class="p-button-text" />
+                <Button label="Yes" icon="pi pi-check" @click="closeConfirmation" class="p-button-text" autofocus />
+            </template>
+        </Dialog>
     </div>
 </template>
 <style></style>
