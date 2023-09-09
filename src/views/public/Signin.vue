@@ -112,14 +112,7 @@ const signinUser = async () => {
 const loginUser = () => {
     setTimeout(() => router.push('/auth/login'), 500);
 };
-const displayConfirmation = ref(false);
-const openConfirmation = () => {
-    displayConfirmation.value = true;
-};
 
-const closeConfirmation = () => {
-    displayConfirmation.value = false;
-};
 onMounted(() => {
     //console.log(radioValue);
 });
@@ -193,16 +186,6 @@ onMounted(() => {
 
         <Button label="Agendar Cita" icon="pi pi-calendar" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="signinUser"></Button>
         <Button label="Ya estas registrado ?" icon="pi pi-user" class="p-button-info col-12 md:col-3 p-button-text mr-2 mb-2" @click="loginUser"></Button>
-        <Dialog header="Confirmación" v-model:visible="displayConfirmation" :style="{ width: '350px' }" :modal="true">
-            <div class="flex align-items-center justify-content-center">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span>¿El paciente es menor de edad o dependiente?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" @click="closeConfirmation" class="p-button-text" />
-                <Button label="Yes" icon="pi pi-check" @click="closeConfirmation" class="p-button-text" autofocus />
-            </template>
-        </Dialog>
     </div>
 </template>
 <style></style>

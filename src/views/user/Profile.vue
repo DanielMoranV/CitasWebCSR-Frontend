@@ -77,7 +77,7 @@ onMounted(async () => {
 <template>
     <div className="card">
         <h5>Información Personal</h5>
-        <p>Su contraseña por defecto será su DNI, cambiela regularmente para mayor seguridad</p>
+        <p>Su contraseña por defecto será su DNI, cambiela regularmente para mayor seguridad; paña añadir a menores de edad o personas a su cargo por favor selesccione <strong>"Dependientes"</strong>;</p>
     </div>
     <div className="grid">
         <div class="col-12 md:col-6">
