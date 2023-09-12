@@ -1,11 +1,12 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents } from '../api';
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
         dataUser: [],
         loadingDataUser: false,
+        dependents: [],
         msg: null
     }),
     actions: {
@@ -30,6 +31,20 @@ export const useDataUserStore = defineStore('datauserStore', {
                     const { data } = await fetchUsers();
                     this.dataUser = data;
                     return this.dataUser;
+                } catch (error) {
+                    console.log(error);
+                } finally {
+                    this.loadingDataUser = false;
+                }
+            }
+        },
+        async getUsersDependents() {
+            if (this.dataUser.length === 0) {
+                this.loadingDataUser = true;
+                try {
+                    const { data } = await getDependents();
+                    this.dependents = data;
+                    return this.dependents;
                 } catch (error) {
                     console.log(error);
                 } finally {

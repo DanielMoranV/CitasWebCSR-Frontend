@@ -123,3 +123,15 @@ export const getInfoDoctors = () => axios.get('/infodoctors');
  * @since 1.0
  */
 export const getInfoDoctor = (cmp) => axios.get(`/infodoctors/${cmp}`);
+
+/**
+ * @url GET /users/:userdni/dependents
+ * @since 1.0
+ */
+export const getDependents = (userdni) => axios.get(`/users/${userdni}/dependents`);
+
+/**
+ * @url POST /dependents
+ * @since 1.0
+ */
+export const createDependents = (payload) => axios.post('/users/dependents', payload);
