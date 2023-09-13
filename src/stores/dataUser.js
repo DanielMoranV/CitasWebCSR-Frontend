@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents } from '../api';
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
@@ -52,6 +52,15 @@ export const useDataUserStore = defineStore('datauserStore', {
                 } finally {
                     this.loadingDataUser = false;
                 }
+            }
+        },
+        async addUsersDependents(payload) {
+            try {
+                const { data } = await createDependents(payload);
+                return data;
+                //this.getUsersDependents()
+            } catch (error) {
+                console.log(error);
             }
         },
 

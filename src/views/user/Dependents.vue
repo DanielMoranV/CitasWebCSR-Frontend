@@ -19,6 +19,10 @@ const selectedDependents = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
+const sexItems = ref([
+    { name: 'Masculino', code: 'Masculino' },
+    { name: 'Femenino', code: 'Femenino' }
+]);
 
 onBeforeMount(() => {
     initFilters();
@@ -47,15 +51,23 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
-const saveDependent = () => {
+const saveDependent = async () => {
     submitted.value = true;
     if (dependent.value.name && dependent.value.name.trim() && dependent.value.surnames && dependent.value.dni && dependent.value.birthDate && dependent.value.sex && dependent.value.dni) {
         if (dependent.value.dependentId) {
             dependents.value[findIndexById(dependent.value.dependentId)] = dependent.value;
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Dependientes Actualizado', life: 3000 });
         } else {
+            const userId = authStore.user.userId;
+            dependent.value.userId = userId;
+            const dataDependent = await dataUserStore.addUsersDependents(dependent.value);
+            console.log(dataDependent);
+            dependent.value.dependentId = dataDependent.dependentId;
+            let birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
+            dependent.value.birthDate = birthDate;
             dependents.value.push(dependent.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Dependiente Registrado', life: 3000 });
+            console.log(dependent.value);
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
         }
         dependentDialog.value = false;
         dependent.value = {};
@@ -77,7 +89,7 @@ const deleteDependent = () => {
     dependents.value = dependents.value.filter((val) => val.id !== dependent.value.id);
     deleteDependentDialog.value = false;
     dependent.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Dependiente eliminado', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente eliminado', life: 3000 });
 };
 
 const findIndexById = (id) => {
@@ -89,15 +101,6 @@ const findIndexById = (id) => {
         }
     }
     return index;
-};
-
-const createId = () => {
-    let id = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
 };
 
 // const exportCSV = () => {
@@ -188,9 +191,9 @@ const initFilters = () => {
                             {{ slotProps.data.birthDate }}
                         </template>
                     </Column>
-                    <Column field="sex" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="sex" header="Sexo" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Status</span>
+                            <span class="p-column-title">Sexo</span>
                             {{ slotProps.data.sex }}
                         </template>
                     </Column>
@@ -245,7 +248,7 @@ const initFilters = () => {
                         </div>
                         <div class="field col">
                             <label for="sex">Sexo</label>
-                            <InputText id="sex" v-model="dependent.sex" />
+                            <Dropdown id="sex" v-model="dependent.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
                         </div>
                     </div>
                     <template #footer>
