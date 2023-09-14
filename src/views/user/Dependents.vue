@@ -4,7 +4,7 @@ import { ref, onMounted, onBeforeMount } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
-import { dformat } from '../../utils/day';
+import { dformat, dparse } from '../../utils/day';
 import { updateDependent } from '../../api';
 
 const toast = useToast();
@@ -60,8 +60,10 @@ const saveDependent = async () => {
             const dependentIndex = dependents.value.findIndex((item) => item.dependentId === dependent.value.dependentId);
             if (dependentIndex !== -1) {
                 console.log(dependent.value);
+                const fecha = dparse(dependent.value.birthDate, 'DD MMMM YYYY');
+                dependent.value.birthDate = new Date(dformat(fecha, 'YYYY-MM-DD'));
+                console.log(dependent.value.birthDate);
                 await updateDependent(dependent.value.dependentId, dependent.value);
-
                 dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
                 dependents.value[dependentIndex] = dependent.value;
             }
@@ -69,6 +71,7 @@ const saveDependent = async () => {
         } else {
             const userId = authStore.user.userId;
             dependent.value.userId = userId;
+
             const dataDependent = await dataUserStore.addUsersDependents(dependent.value);
             dependent.value.dependentId = dataDependent.dependentId;
             dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
@@ -96,17 +99,6 @@ const deleteDependent = () => {
     deleteDependentDialog.value = false;
     dependent.value = {};
     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente eliminado', life: 3000 });
-};
-
-const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < dependents.value.length; i++) {
-        if (dependents.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
 };
 
 // const exportCSV = () => {
