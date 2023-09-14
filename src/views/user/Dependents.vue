@@ -5,6 +5,7 @@ import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
 import { dformat } from '../../utils/day';
+import { updateDependent } from '../../api';
 
 const toast = useToast();
 const dataUserStore = useDataUserStore();
@@ -36,8 +37,6 @@ onMounted(async () => {
             return dependent;
         });
     });
-    // Formatear Fecha y hora
-    console.log(dependents.value);
 });
 
 const openNew = () => {
@@ -53,27 +52,34 @@ const hideDialog = () => {
 
 const saveDependent = async () => {
     submitted.value = true;
-    if (dependent.value.name && dependent.value.name.trim() && dependent.value.surnames && dependent.value.dni && dependent.value.birthDate && dependent.value.sex && dependent.value.dni) {
+
+    const isRequiredFieldsFilled = dependent.value.name && dependent.value.name.trim() && dependent.value.surnames && dependent.value.dni && dependent.value.birthDate && dependent.value.sex && dependent.value.dni;
+
+    if (isRequiredFieldsFilled) {
         if (dependent.value.dependentId) {
-            dependents.value[findIndexById(dependent.value.dependentId)] = dependent.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Dependientes Actualizado', life: 3000 });
+            const dependentIndex = dependents.value.findIndex((item) => item.dependentId === dependent.value.dependentId);
+            if (dependentIndex !== -1) {
+                console.log(dependent.value);
+                await updateDependent(dependent.value.dependentId, dependent.value);
+
+                dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
+                dependents.value[dependentIndex] = dependent.value;
+            }
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
         } else {
             const userId = authStore.user.userId;
             dependent.value.userId = userId;
             const dataDependent = await dataUserStore.addUsersDependents(dependent.value);
-            console.log(dataDependent);
             dependent.value.dependentId = dataDependent.dependentId;
-            let birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
-            dependent.value.birthDate = birthDate;
+            dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
             dependents.value.push(dependent.value);
-            console.log(dependent.value);
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
         }
+
         dependentDialog.value = false;
         dependent.value = {};
     }
 };
-
 const editDependent = (editDependent) => {
     dependent.value = { ...editDependent };
     console.log(dependent);

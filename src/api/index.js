@@ -135,3 +135,10 @@ export const getDependents = (userdni) => axios.get(`/users/${userdni}/dependent
  * @since 1.0
  */
 export const createDependents = (payload) => axios.post('/users/dependents', payload);
+
+/**
+ * @url PUT /collaborator/:dni
+ * @since 1.0
+ */
+export const updateDependent = (dependentId, payload) => axios.put(`users/dependents/${dependentId}`, payload);
+/** */

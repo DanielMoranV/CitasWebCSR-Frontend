@@ -63,6 +63,15 @@ export const useDataUserStore = defineStore('datauserStore', {
                 console.log(error);
             }
         },
+        async updateUserDependents(dependentId, payload) {
+            try {
+                const { data } = await updateUser(dependentId, payload);
+                this.dependents = this.dependents.map((item) => (item.dependentId === dependentId ? { ...item, ...data } : item));
+                console.log(this.dependents);
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
 
         async addUsers(payload) {
             try {
