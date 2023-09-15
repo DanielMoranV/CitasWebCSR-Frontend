@@ -49,29 +49,26 @@ const hideDialog = () => {
     dependentDialog.value = false;
     submitted.value = false;
 };
-
 const saveDependent = async () => {
     submitted.value = true;
 
-    const isRequiredFieldsFilled = dependent.value.name && dependent.value.name.trim() && dependent.value.surnames && dependent.value.dni && dependent.value.birthDate && dependent.value.sex && dependent.value.dni;
+    const { name, surnames, dni, birthDate, sex, dependentId } = dependent.value;
 
-    if (isRequiredFieldsFilled) {
-        if (dependent.value.dependentId) {
-            const dependentIndex = dependents.value.findIndex((item) => item.dependentId === dependent.value.dependentId);
+    if (name && name.trim() && surnames && dni && birthDate && sex) {
+        const userId = authStore.user.userId;
+        dependent.value.userId = userId;
+        dependent.value.birthDate = new Date(dparse(birthDate));
+
+        if (dependentId) {
+            const dependentIndex = dependents.value.findIndex((item) => item.dependentId === dependentId);
             if (dependentIndex !== -1) {
-                console.log(dependent.value);
-                const fecha = dparse(dependent.value.birthDate, 'DD MMMM YYYY');
-                dependent.value.birthDate = new Date(dformat(fecha, 'YYYY-MM-DD'));
-                console.log(dependent.value.birthDate);
-                await updateDependent(dependent.value.dependentId, dependent.value);
+                await updateDependent(dependentId, dependent.value);
+
                 dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
                 dependents.value[dependentIndex] = dependent.value;
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
             }
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
         } else {
-            const userId = authStore.user.userId;
-            dependent.value.userId = userId;
-
             const dataDependent = await dataUserStore.addUsersDependents(dependent.value);
             dependent.value.dependentId = dataDependent.dependentId;
             dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
@@ -94,8 +91,10 @@ const confirmDeleteDependent = (editDependent) => {
     deleteDependentDialog.value = true;
 };
 
-const deleteDependent = () => {
-    dependents.value = dependents.value.filter((val) => val.id !== dependent.value.id);
+const deleteDependent = async () => {
+    dependents.value = dependents.value.filter((val) => val.dependentId !== dependent.value.dependentId);
+    console.log(dependent.value.dependentId);
+    await dataUserStore.deleteUserDependents(dependent.value.dependentId);
     deleteDependentDialog.value = false;
     dependent.value = {};
     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente eliminado', life: 3000 });
@@ -110,9 +109,14 @@ const confirmDeleteSelected = () => {
 };
 const deleteSelectedDependents = () => {
     dependents.value = dependents.value.filter((val) => !selectedDependents.value.includes(val));
+    const selectedIds = selectedDependents.value.map((dependent) => dependent.dependentId);
+
+    selectedIds.forEach(async (dependentId) => {
+        await dataUserStore.deleteUserDependents(dependentId);
+    });
     deleteDependentsDialog.value = false;
     selectedDependents.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Dependientes eliminados', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependientes eliminados', life: 3000 });
 };
 
 const initFilters = () => {
@@ -130,8 +134,8 @@ const initFilters = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedDependents || !selectedDependents.length" />
+                            <Button label="Nuevo Dependiente" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedDependents || !selectedDependents.length" />
                         </div>
                     </template>
 
@@ -259,7 +263,7 @@ const initFilters = () => {
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="dependent"
-                            >Are you sure you want to delete <b>{{ dependent.name }}</b
+                            >¿Estás seguro de que quieres eliminar a <b>{{ dependent.name }}</b
                             >?</span
                         >
                     </div>

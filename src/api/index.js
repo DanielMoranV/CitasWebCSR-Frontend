@@ -140,5 +140,10 @@ export const createDependents = (payload) => axios.post('/users/dependents', pay
  * @url PUT /collaborator/:dni
  * @since 1.0
  */
-export const updateDependent = (dependentId, payload) => axios.put(`users/dependents/${dependentId}`, payload);
-/** */
+export const updateDependent = (dependentId, payload) => axios.put(`/users/dependents/${dependentId}`, payload);
+
+/**
+ * @url DELETE /collaborator/:id
+ * @since 1.0
+ */
+export const deleteDependent = (dependentId) => axios.delete(`/users/dependents/${dependentId}`);
