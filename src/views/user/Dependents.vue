@@ -4,7 +4,7 @@ import { ref, onMounted, onBeforeMount } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
-import { dformat } from '../../utils/day';
+import { dformat, dparse, dparseFromFormat } from '../../utils/day';
 import { updateDependent } from '../../api';
 
 const toast = useToast();
@@ -59,9 +59,8 @@ const saveDependent = async () => {
         if (dependent.value.dependentId) {
             const dependentIndex = dependents.value.findIndex((item) => item.dependentId === dependent.value.dependentId);
             if (dependentIndex !== -1) {
-                console.log(dependent.value);
+                dependent.value.birthDate = new Date(dparse(dependent.value.birthDate));
                 await updateDependent(dependent.value.dependentId, dependent.value);
-
                 dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
                 dependents.value[dependentIndex] = dependent.value;
             }
