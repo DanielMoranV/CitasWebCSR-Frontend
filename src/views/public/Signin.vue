@@ -104,7 +104,7 @@ const signinUser = async () => {
 
     if (authStore.sessionUser) {
         showToast('success', 'Validación Correcta Bienvenido', 3000);
-        //setTimeout(() => router.push('/quotes'), 2000);
+        setTimeout(() => router.push('/quotes'), 2000);
     }
 
     setTimeout(() => (loading.value = false), 1000);
