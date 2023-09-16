@@ -2,15 +2,37 @@
 import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useLayout } from '@/layout/composables/layout';
 import { useDataUserStore } from '../../stores/dataUser';
+import { dformat, dparse } from '../../utils/day';
 
 const toast = useToast();
 const dataUserStore = useDataUserStore();
-const { contextPath } = useLayout();
 
 const users = ref(null);
-const user = ref({});
+const user = ref({
+    accessId: null,
+    active: null,
+    createAt: null,
+    lastSession: null,
+    password: null,
+    roleId: null,
+    roleName: null,
+    status: null,
+    user: {
+        address: null,
+        birthDate: null,
+        civilStatus: null,
+        dni: null,
+        documentType: null,
+        email: null,
+        name: null,
+        phone: null,
+        photo: null,
+        sex: null,
+        surnames: null,
+        userId: null
+    }
+});
 const userDialog = ref(false);
 const deleteUserDialog = ref(false);
 const deleteUsersDialog = ref(false);
@@ -18,9 +40,9 @@ const selectedUsers = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-const statuses = ref([
-    { label: 'ONLINE', value: 'online' },
-    { label: 'OFFLINE', value: 'offline' }
+const sexItems = ref([
+    { name: 'Masculino', code: 'Masculino' },
+    { name: 'Femenino', code: 'Femenino' }
 ]);
 const roleNames = ref({
     1: 'Administrador',
@@ -34,9 +56,19 @@ onBeforeMount(() => {
 });
 
 onMounted(async () => {
-    await dataUserStore.getCollaborators().then((data) => (users.value = data));
+    await dataUserStore.getCollaborators().then((data) => {
+        users.value = data.map((user) => {
+            let birthDate = dformat(user.birthDate, 'DD MMMM YYYY');
+            user.user.birthDate = birthDate;
+            // Agrega el campo roleName basado en roleId
+            user.roleName = roleNames.value[user.roleId];
+            return user;
+        });
+    });
+
     console.log(users.value);
 });
+
 // const formatCurrency = (value) => {
 //     return value.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 // };
@@ -52,21 +84,33 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
-const saveUser = () => {
+const saveUser = async () => {
     submitted.value = true;
-    if (user.value.name && user.value.name.trim() && user.value.price) {
-        if (user.value.id) {
-            user.value.inventoryStatus = user.value.inventoryStatus.value ? user.value.inventoryStatus.value : user.value.inventoryStatus;
-            users.value[findIndexById(user.value.id)] = user.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
+
+    const { name, surnames, dni, birthDate, sex, userId } = user.value;
+
+    if (name && name.trim() && surnames && dni && birthDate && sex) {
+        const userId = authStore.user.userId;
+        user.value.userId = userId;
+        user.value.birthDate = new Date(dparse(birthDate));
+
+        if (userId) {
+            const userIndex = users.value.findIndex((item) => item.userId === userId);
+            if (userIndex !== -1) {
+                await updateDependent(userId, user.value);
+
+                user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
+                users.value[userIndex] = user.value;
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
+            }
         } else {
-            user.value.id = createId();
-            user.value.code = createId();
-            user.value.image = 'user-placeholder.svg';
-            user.value.inventoryStatus = user.value.inventoryStatus ? user.value.inventoryStatus.value : 'INSTOCK';
+            const dataDependent = await dataUserStore.addUsersDependents(user.value);
+            user.value.userId = dataDependent.userId;
+            user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
             users.value.push(user.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
         }
+
         userDialog.value = false;
         user.value = {};
     }
@@ -74,7 +118,7 @@ const saveUser = () => {
 
 const editUser = (editUser) => {
     user.value = { ...editUser };
-    console.log(user);
+    console.log('user', user);
     userDialog.value = true;
 };
 
@@ -154,7 +198,7 @@ const initFilters = () => {
                     ref="dt"
                     :value="users"
                     v-model:selection="selectedUsers"
-                    dataKey="userId"
+                    dataKey="accessId"
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
@@ -174,34 +218,34 @@ const initFilters = () => {
                     </template>
 
                     <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                    <Column field="code" header="DNI" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="user.dni" header="DNI" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">DNI</span>
-                            {{ slotProps.data.dni }}
+                            {{ slotProps.data.user.dni }}
                         </template>
                     </Column>
-                    <Column field="name" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="user.name" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Nombre</span>
-                            {{ slotProps.data.name }}
+                            {{ slotProps.data.user.name }}
                         </template>
                     </Column>
-                    <Column field="surname" header="Apellidos" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="user.surnames" header="Apellidos" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Apellidos</span>
-                            {{ slotProps.data.surnames }}
+                            {{ slotProps.data.user.surnames }}
                         </template>
                     </Column>
-                    <Column field="role" header="Rol" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="roleName" header="Rol" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Rol</span>
-                            {{ roleNames[slotProps.data.access[0].roleId] }}
+                            {{ slotProps.data.roleName }}
                         </template>
                     </Column>
                     <Column field="status" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Status</span>
-                            <span :class="'user-badge status-' + (slotProps.data.access[0].status ? slotProps.data.access[0].status.toLowerCase() : '')">{{ slotProps.data.access[0].status }}</span>
+                            <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status }}</span>
                         </template>
                     </Column>
                     <!-- <Column header="Image" headerStyle="width:14%; min-width:10rem;">
@@ -228,7 +272,7 @@ const initFilters = () => {
                             <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
                         </template>
                     </Column>-->
-                    <Column headerStyle="min-width:10rem;">
+                    <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editUser(slotProps.data)" />
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteUser(slotProps.data)" />
@@ -236,71 +280,55 @@ const initFilters = () => {
                     </Column>
                 </DataTable>
 
-                <Dialog v-model:visible="userDialog" :style="{ width: '450px' }" header="User Details" :modal="true" class="p-fluid">
-                    <img :src="contextPath + 'demo/images/user/' + user.image" :alt="user.image" v-if="user.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
+                <Dialog v-model:visible="userDialog" :style="{ width: '500px' }" header="Detalle de colaborador" :modal="true" class="p-fluid">
+                    <!-- <img :src="contextPath + 'demo/images/user/' + user.image" :alt="user.image" v-if="user.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" /> -->
                     <div class="field">
-                        <label for="name">Name</label>
-                        <InputText id="name" v-model.trim="user.name" required="true" autofocus :class="{ 'p-invalid': submitted && !user.name }" />
-                        <small class="p-invalid" v-if="submitted && !user.name">Name is required.</small>
-                    </div>
-                    <div class="field">
-                        <label for="description">Description</label>
-                        <Textarea id="description" v-model="user.description" required="true" rows="3" cols="20" />
-                    </div>
-
-                    <div class="field">
-                        <label for="inventoryStatus" class="mb-3">Inventory Status</label>
-                        <Dropdown id="inventoryStatus" v-model="user.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
-                            <template #value="slotProps">
-                                <div v-if="slotProps.value && slotProps.value.value">
-                                    <span :class="'user-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
-                                </div>
-                                <div v-else-if="slotProps.value && !slotProps.value.value">
-                                    <span :class="'user-badge status-' + slotProps.value.toLowerCase()">{{ slotProps.value }}</span>
-                                </div>
-                                <span v-else>
-                                    {{ slotProps.placeholder }}
-                                </span>
-                            </template>
-                        </Dropdown>
-                    </div>
-
-                    <div class="field">
-                        <label class="mb-3">Category</label>
+                        <label class="mb-3">Tipo de documento</label>
                         <div class="formgrid grid">
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category1" name="category" value="Accessories" v-model="user.category" />
-                                <label for="category1">Accessories</label>
+                            <div class="field-radiobutton col-4">
+                                <RadioButton id="dni" name="option" value="DNI" v-model="user.user.documentType" />
+                                <label for="dni">DNI</label>
                             </div>
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category2" name="category" value="Clothing" v-model="user.category" />
-                                <label for="category2">Clothing</label>
+                            <div class="field-radiobutton col-4">
+                                <RadioButton id="ce" name="option" value="CE" v-model="user.user.documentType" />
+                                <label for="ce">CE</label>
                             </div>
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category3" name="category" value="Electronics" v-model="user.category" />
-                                <label for="category3">Electronics</label>
-                            </div>
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category4" name="category" value="Fitness" v-model="user.category" />
-                                <label for="category4">Fitness</label>
+                            <div class="field-radiobutton col-4">
+                                <RadioButton id="pasaport" name="option" value="passport" v-model="user.user.documentType" />
+                                <label for="pasaport">Pasaporte</label>
                             </div>
                         </div>
                     </div>
+                    <div class="field">
+                        <label for="dni">DNI</label>
+                        <InputText id="name" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
+                        <small class="p-invalid" v-if="submitted && !user.user.dni">DNI es requerido.</small>
+                    </div>
+                    <div class="field">
+                        <label for="name">Nombre</label>
+                        <InputText id="name" v-model.trim="user.user.name" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.name }" />
+                        <small class="p-invalid" v-if="submitted && !user.name">Nombre es requerido.</small>
+                    </div>
 
+                    <div class="field">
+                        <label for="name">Apellidos</label>
+                        <InputText id="name" v-model.trim="user.user.surnames" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
+                        <small class="p-invalid" v-if="submitted && !user.user.surnames">Apellido es requerido.</small>
+                    </div>
                     <div class="formgrid grid">
                         <div class="field col">
-                            <label for="price">Price</label>
-                            <InputNumber id="price" v-model="user.price" mode="currency" currency="USD" locale="en-US" :class="{ 'p-invalid': submitted && !user.price }" :required="true" />
-                            <small class="p-invalid" v-if="submitted && !user.price">Price is required.</small>
+                            <label for="birthDate">Fecha de Nacimiento</label>
+                            <Calendar :showIcon="true" :showButtonBar="true" v-model="user.user.birthDate" dateFormat="dd/mm/yy" required="true"></Calendar>
+                            <small class="p-invalid" v-if="submitted && !user.birthDate">Fecha de nacimiento es requerido.</small>
                         </div>
                         <div class="field col">
-                            <label for="quantity">Quantity</label>
-                            <InputNumber id="quantity" v-model="user.quantity" integeronly />
+                            <label for="sex">Sexo</label>
+                            <Dropdown id="sex" v-model="user.user.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
                         </div>
                     </div>
                     <template #footer>
-                        <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveUser" />
+                        <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
+                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveUser" />
                     </template>
                 </Dialog>
 
