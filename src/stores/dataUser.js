@@ -5,24 +5,23 @@ import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
-        dataUser: [],
+        dataUser: cache.getItem('collaborator'),
         loadingDataUser: false,
         dependents: cache.getItem('dependents'),
         msg: null
     }),
     actions: {
         async getCollaborators() {
-            if (this.dataUser.length === 0) {
-                this.loadingDataUser = true;
-                try {
-                    const { data } = await fetchCollaborators();
-                    this.dataUser = data;
-                    return this.dataUser;
-                } catch (error) {
-                    console.log(error);
-                } finally {
-                    this.loadingDataUser = false;
-                }
+            this.loadingDataUser = true;
+            try {
+                const { data } = await fetchCollaborators();
+                cache.setItem('collaborator', data);
+                this.dataUser = data;
+                return this.dataUser;
+            } catch (error) {
+                console.log(error);
+            } finally {
+                this.loadingDataUser = false;
             }
         },
         async getUsers() {

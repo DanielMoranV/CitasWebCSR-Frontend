@@ -9,30 +9,8 @@ const toast = useToast();
 const dataUserStore = useDataUserStore();
 
 const users = ref(null);
-const user = ref({
-    accessId: null,
-    active: null,
-    createAt: null,
-    lastSession: null,
-    password: null,
-    roleId: null,
-    roleName: null,
-    status: null,
-    user: {
-        address: null,
-        birthDate: null,
-        civilStatus: null,
-        dni: null,
-        documentType: null,
-        email: null,
-        name: null,
-        phone: null,
-        photo: null,
-        sex: null,
-        surnames: null,
-        userId: null
-    }
-});
+const user = ref({});
+console.log(user.value);
 const userDialog = ref(false);
 const deleteUserDialog = ref(false);
 const deleteUsersDialog = ref(false);
@@ -44,6 +22,13 @@ const sexItems = ref([
     { name: 'Masculino', code: 'Masculino' },
     { name: 'Femenino', code: 'Femenino' }
 ]);
+const roleItems = ref([
+    { name: 'Administrador', code: 1 },
+    { name: 'Admisionista', code: 2 },
+    { name: 'Médico', code: 3 },
+    { name: 'Paciente', code: 4 }
+]);
+
 const roleNames = ref({
     1: 'Administrador',
     2: 'Admisionista',
@@ -74,7 +59,30 @@ onMounted(async () => {
 // };
 
 const openNew = () => {
-    user.value = {};
+    user.value = {
+        accessId: null,
+        active: null,
+        createAt: null,
+        lastSession: null,
+        password: null,
+        roleId: null,
+        roleName: null,
+        status: null,
+        user: {
+            address: null,
+            birthDate: null,
+            civilStatus: null,
+            dni: null,
+            documentType: null,
+            email: null,
+            name: null,
+            phone: null,
+            photo: null,
+            sex: null,
+            surnames: null,
+            userId: null
+        }
+    };
     submitted.value = false;
     userDialog.value = true;
 };
@@ -86,34 +94,55 @@ const hideDialog = () => {
 
 const saveUser = async () => {
     submitted.value = true;
-
-    const { name, surnames, dni, birthDate, sex, userId } = user.value;
-
-    if (name && name.trim() && surnames && dni && birthDate && sex) {
-        const userId = authStore.user.userId;
-        user.value.userId = userId;
-        user.value.birthDate = new Date(dparse(birthDate));
-
-        if (userId) {
-            const userIndex = users.value.findIndex((item) => item.userId === userId);
-            if (userIndex !== -1) {
-                await updateDependent(userId, user.value);
-
-                user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
-                users.value[userIndex] = user.value;
-                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
-            }
-        } else {
-            const dataDependent = await dataUserStore.addUsersDependents(user.value);
-            user.value.userId = dataDependent.userId;
-            user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
-            users.value.push(user.value);
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
+    console.log(user.value);
+    const payload = {
+        address: user.value.user.address,
+        birthDate: user.value.user.birthDate,
+        civilStatus: user.value.user.civilStatus,
+        dni: user.value.user.dni,
+        documentType: user.value.user.documentType,
+        email: user.value.user.email,
+        name: user.value.user.name,
+        phone: user.value.user.phone,
+        photo: user.value.user.photo,
+        sex: user.value.user.sex,
+        surnames: user.value.user.surnames,
+        access: {
+            username: `${user.value.user.dni}-${user.value.roleId}`,
+            password: user.value.user.dni,
+            roleId: user.value.roleId
         }
+    };
+    console.log(payload);
+    //await dataUserStore.addUsers(payload.value);
 
-        userDialog.value = false;
-        user.value = {};
-    }
+    // const { name, surnames, dni, birthDate, sex } = user.value;
+
+    // if (name && name.trim() && surnames && dni && birthDate && sex) {
+    //     const userId = authStore.user.userId;
+    //     user.value.userId = userId;
+    //     user.value.birthDate = new Date(dparse(birthDate));
+
+    //     if (userId) {
+    //         const userIndex = users.value.findIndex((item) => item.userId === userId);
+    //         if (userIndex !== -1) {
+    //             await updateDependent(userId, user.value);
+
+    //             user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
+    //             users.value[userIndex] = user.value;
+    //             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
+    //         }
+    //     } else {
+    //         const dataDependent = await dataUserStore.addUsersDependents(user.value);
+    //         user.value.userId = dataDependent.userId;
+    //         user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
+    //         users.value.push(user.value);
+    //         toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
+    //     }
+
+    //     userDialog.value = false;
+    //     user.value = {};
+    // }
 };
 
 const editUser = (editUser) => {
@@ -324,6 +353,16 @@ const initFilters = () => {
                         <div class="field col">
                             <label for="sex">Sexo</label>
                             <Dropdown id="sex" v-model="user.user.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
+                        </div>
+                    </div>
+                    <div class="formgrid grid">
+                        <div class="field col">
+                            <label for="phone">Teléfono</label>
+                            <InputText id="name" v-model.trim="user.user.phone" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
+                        </div>
+                        <div class="field col">
+                            <label for="role">Rol</label>
+                            <Dropdown id="role" v-model="user.roleId" :options="roleItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
                         </div>
                     </div>
                     <template #footer>
