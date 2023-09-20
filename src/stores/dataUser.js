@@ -86,6 +86,7 @@ export const useDataUserStore = defineStore('datauserStore', {
             try {
                 const { data } = await createUser(payload);
                 this.dataUser = data;
+                return data;
             } catch (error) {
                 console.log(error);
             } finally {

@@ -10,7 +10,6 @@ const dataUserStore = useDataUserStore();
 
 const users = ref(null);
 const user = ref({});
-console.log(user.value);
 const userDialog = ref(false);
 const deleteUserDialog = ref(false);
 const deleteUsersDialog = ref(false);
@@ -49,8 +48,6 @@ onMounted(async () => {
             return user;
         });
     });
-
-    console.log(users.value);
 });
 
 // const formatCurrency = (value) => {
@@ -94,56 +91,48 @@ const hideDialog = () => {
 const saveUser = async () => {
     submitted.value = true;
     console.log(user.value);
-    const payload = {
-        address: user.value.user.address,
-        birthDate: user.value.user.birthDate,
-        civilStatus: user.value.user.civilStatus,
-        dni: user.value.user.dni,
-        documentType: user.value.user.documentType,
-        email: user.value.user.email,
-        name: user.value.user.name,
-        phone: user.value.user.phone,
-        photo: user.value.user.photo,
-        sex: user.value.user.sex,
-        surnames: user.value.user.surnames,
-        access: {
-            username: `${user.value.user.dni}-${user.value.roleId}`,
-            password: user.value.user.dni,
-            roleId: user.value.roleId,
-            createAt: new Date()
+
+    if (user.value.user.name && user.value.user.name.trim() && user.value.user.surnames && user.value.user.dni && user.value.user.birthDate && user.value.user.sex) {
+        const payload = {
+            address: user.value.user.address,
+            birthDate: user.value.user.birthDate,
+            civilStatus: user.value.user.civilStatus,
+            dni: user.value.user.dni,
+            documentType: user.value.user.documentType,
+            email: user.value.user.email,
+            name: user.value.user.name,
+            phone: user.value.user.phone,
+            photo: user.value.user.photo,
+            sex: user.value.user.sex,
+            surnames: user.value.user.surnames,
+            access: {
+                username: `${user.value.user.dni}-${user.value.roleId}`,
+                password: user.value.user.dni,
+                roleId: user.value.roleId
+            }
+        };
+        console.log(user.value.accessId);
+        if (user.value.accessId) {
+            console.log('if');
+            const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
+            if (userIndex !== -1) {
+                await updateDependent(accessId, user.value);
+                users.value[userIndex] = user.value;
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
+            }
+        } else {
+            console.log('else');
+            const dataUser = await dataUserStore.addUsers(payload);
+            console.log(dataUser);
+            user.value.accessId = dataUser.accessId;
+            //user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
+            users.value.push(user.value);
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Registrado', life: 3000 });
         }
-    };
-    console.log(payload.value.access);
-    console.log(JSON.stringify(payload, null, 2));
-    await dataUserStore.addUsers(payload.value);
 
-    // const { name, surnames, dni, birthDate, sex } = user.value;
-
-    // if (name && name.trim() && surnames && dni && birthDate && sex) {
-    //     const userId = authStore.user.userId;
-    //     user.value.userId = userId;
-    //     user.value.birthDate = new Date(dparse(birthDate));
-
-    //     if (userId) {
-    //         const userIndex = users.value.findIndex((item) => item.userId === userId);
-    //         if (userIndex !== -1) {
-    //             await updateDependent(userId, user.value);
-
-    //             user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
-    //             users.value[userIndex] = user.value;
-    //             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Actualizado', life: 3000 });
-    //         }
-    //     } else {
-    //         const dataDependent = await dataUserStore.addUsersDependents(user.value);
-    //         user.value.userId = dataDependent.userId;
-    //         user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
-    //         users.value.push(user.value);
-    //         toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
-    //     }
-
-    //     userDialog.value = false;
-    //     user.value = {};
-    // }
+        userDialog.value = false;
+        user.value = {};
+    }
 };
 
 const editUser = (editUser) => {
@@ -187,7 +176,6 @@ const createId = () => {
 const exportCSV = () => {
     dt.value.exportCSV();
 };
-console.log(dt);
 
 const confirmDeleteSelected = () => {
     deleteUsersDialog.value = true;
@@ -329,7 +317,7 @@ const initFilters = () => {
                         </div>
                         <div class="field col">
                             <label for="phone">Teléfono</label>
-                            <InputText id="name" v-model.trim="user.user.phone" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
+                            <InputText id="name" v-model.trim="user.user.phone" />
                         </div>
                     </div>
                     <div class="formgrid grid">
