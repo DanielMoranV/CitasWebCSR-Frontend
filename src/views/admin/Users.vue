@@ -25,8 +25,7 @@ const sexItems = ref([
 const roleItems = ref([
     { name: 'Administrador', code: 1 },
     { name: 'Admisionista', code: 2 },
-    { name: 'Médico', code: 3 },
-    { name: 'Paciente', code: 4 }
+    { name: 'Médico', code: 3 }
 ]);
 
 const roleNames = ref({
@@ -110,11 +109,13 @@ const saveUser = async () => {
         access: {
             username: `${user.value.user.dni}-${user.value.roleId}`,
             password: user.value.user.dni,
-            roleId: user.value.roleId
+            roleId: user.value.roleId,
+            createAt: new Date()
         }
     };
-    console.log(payload);
-    //await dataUserStore.addUsers(payload.value);
+    console.log(payload.value.access);
+    console.log(JSON.stringify(payload, null, 2));
+    await dataUserStore.addUsers(payload.value);
 
     // const { name, surnames, dni, birthDate, sex } = user.value;
 
@@ -277,30 +278,6 @@ const initFilters = () => {
                             <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status }}</span>
                         </template>
                     </Column>
-                    <!-- <Column header="Image" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Image</span>
-                            <img :src="contextPath + 'demo/images/user/' + slotProps.data.image" :alt="slotProps.data.image" class="shadow-2" width="100" />
-                        </template>
-                    </Column> -->
-                    <!-- <Column field="price" header="Price" :sortable="true" headerStyle="width:14%; min-width:8rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Price</span>
-                            {{ formatCurrency(slotProps.data.price) }}
-                        </template>
-                    </Column>
-                    <Column field="category" header="Category" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Category</span>
-                            {{ slotProps.data.category }}
-                        </template>
-                    </Column>
-                    <Column field="rating" header="Reviews" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Rating</span>
-                            <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
-                        </template>
-                    </Column>-->
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editUser(slotProps.data)" />
@@ -351,14 +328,14 @@ const initFilters = () => {
                             <small class="p-invalid" v-if="submitted && !user.birthDate">Fecha de nacimiento es requerido.</small>
                         </div>
                         <div class="field col">
-                            <label for="sex">Sexo</label>
-                            <Dropdown id="sex" v-model="user.user.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
+                            <label for="phone">Teléfono</label>
+                            <InputText id="name" v-model.trim="user.user.phone" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
                         </div>
                     </div>
                     <div class="formgrid grid">
                         <div class="field col">
-                            <label for="phone">Teléfono</label>
-                            <InputText id="name" v-model.trim="user.user.phone" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
+                            <label for="sex">Sexo</label>
+                            <Dropdown id="sex" v-model="user.user.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
                         </div>
                         <div class="field col">
                             <label for="role">Rol</label>
