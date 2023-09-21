@@ -11,12 +11,14 @@
         "axios": "^1.4.0",
         "chart.js": "3.3.2",
         "dayjs": "^1.11.9",
+        "file-saver": "^2.0.5",
         "pinia": "^2.1.6",
         "primeflex": "^3.2.1",
         "primeicons": "^6.0.1",
         "primevue": "3.28.0",
         "vue": "^3.2.41",
-        "vue-router": "^4.1.5"
+        "vue-router": "^4.1.5",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@rushstack/eslint-patch": "^1.1.4",

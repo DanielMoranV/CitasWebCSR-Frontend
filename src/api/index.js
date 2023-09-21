@@ -32,6 +32,7 @@ export const getAccessUser = (username, payload) => axios.get(`/access/${usernam
  * @since 1.0
  */
 export const updateAccessUser = (username, payload) => axios.put(`/access/${username}`, payload);
+export const updateAccessId = (accessId, payload) => axios.put(`/access/accessId/${accessId}`, payload);
 
 // Usuarios
 /**

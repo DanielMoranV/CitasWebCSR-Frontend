@@ -93,7 +93,6 @@ const confirmDeleteDependent = (editDependent) => {
 
 const deleteDependent = async () => {
     dependents.value = dependents.value.filter((val) => val.dependentId !== dependent.value.dependentId);
-    console.log(dependent.value.dependentId);
     await dataUserStore.deleteUserDependents(dependent.value.dependentId);
     deleteDependentDialog.value = false;
     dependent.value = {};

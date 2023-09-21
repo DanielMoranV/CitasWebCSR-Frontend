@@ -4,6 +4,8 @@ import { ref, onMounted, onBeforeMount } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { dformat, dparse } from '../../utils/day';
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 
 const toast = useToast();
 const dataUserStore = useDataUserStore();
@@ -37,7 +39,7 @@ const roleNames = ref({
 onBeforeMount(() => {
     initFilters();
 });
-
+const filename = `listcolaborator-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
     await dataUserStore.getCollaborators().then((data) => {
         users.value = data.map((user) => {
@@ -49,10 +51,6 @@ onMounted(async () => {
         });
     });
 });
-
-// const formatCurrency = (value) => {
-//     return value.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
-// };
 
 const openNew = () => {
     user.value = {
@@ -90,7 +88,6 @@ const hideDialog = () => {
 
 const saveUser = async () => {
     submitted.value = true;
-    console.log(user.value);
 
     if (user.value.user.name && user.value.user.name.trim() && user.value.user.surnames && user.value.user.dni && user.value.user.birthDate && user.value.user.sex) {
         const payload = {
@@ -111,21 +108,22 @@ const saveUser = async () => {
                 roleId: user.value.roleId
             }
         };
-        console.log(user.value.accessId);
         if (user.value.accessId) {
-            console.log('if');
             const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
             if (userIndex !== -1) {
-                await updateDependent(accessId, user.value);
+                payload.access.accessId = user.value.accessId;
+                payload.userId = user.value.user.userId;
+                payload.birthDate = dparse(new Date(payload.birthDate));
+                await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload);
+                user.value.roleName = roleNames.value[user.value.roleId];
                 users.value[userIndex] = user.value;
                 toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
             }
         } else {
-            console.log('else');
             const dataUser = await dataUserStore.addUsers(payload);
-            console.log(dataUser);
-            user.value.accessId = dataUser.accessId;
-            //user.value.birthDate = dformat(user.value.birthDate, 'DD MMMM YYYY');
+            user.value.accessId = dataUser.access[0].accessId;
+            user.value.roleName = roleNames.value[user.value.roleId];
+            user.value.status = 'offline';
             users.value.push(user.value);
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Registrado', life: 3000 });
         }
@@ -137,7 +135,6 @@ const saveUser = async () => {
 
 const editUser = (editUser) => {
     user.value = { ...editUser };
-    console.log('user', user);
     userDialog.value = true;
 };
 
@@ -164,17 +161,46 @@ const findIndexById = (id) => {
     return index;
 };
 
-const createId = () => {
-    let id = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
+const exportCSV = () => {
+    console.log(dt.value);
+    dt.value.exportCSV();
+};
+const exportToExcel = () => {
+    // Obtén los datos de la tabla
+    const data = dt.value.value.map((row) => ({ ...row }));
+
+    // Crea una hoja de cálculo a partir de los datos
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    // Crea un libro de trabajo y añade la hoja de cálculo
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+    // Escribe el libro de trabajo a un archivo Excel
+    const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    // Guarda el archivo en el sistema del cliente
+    saveAs(new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`);
 };
 
-const exportCSV = () => {
-    dt.value.exportCSV();
+const onUpload = (event) => {
+    const file = event.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const worksheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[worksheetName];
+
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Ahora jsonData contiene los datos del archivo Excel en formato JSON
+        console.log(jsonData);
+    };
+
+    reader.readAsArrayBuffer(file);
 };
 
 const confirmDeleteSelected = () => {
@@ -182,9 +208,14 @@ const confirmDeleteSelected = () => {
 };
 const deleteSelectedUsers = () => {
     users.value = users.value.filter((val) => !selectedUsers.value.includes(val));
+    const selectedIds = selectedUsers.value.map((user) => user.accessId);
+
+    selectedIds.forEach(async (accessId) => {
+        await dataUserStore.disableUser(accessId);
+    });
     deleteUsersDialog.value = false;
     selectedUsers.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Deleted', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Colaboradores deshabilitados', life: 3000 });
 };
 
 const initFilters = () => {
@@ -202,12 +233,22 @@ const initFilters = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
+                            <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Button label="Deshabilitar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
                         </div>
                     </template>
 
                     <template v-slot:end>
+                        <FileUpload
+                            mode="basic"
+                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            :auto="true"
+                            :maxFileSize="1000000"
+                            label="Importar"
+                            chooseLabel="Importar"
+                            class="mr-2 inline-block"
+                            @upload="onUpload"
+                        />
                         <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
@@ -224,6 +265,7 @@ const initFilters = () => {
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} Colaboradores"
                     responsiveLayout="scroll"
+                    :exportFilename="filename"
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">

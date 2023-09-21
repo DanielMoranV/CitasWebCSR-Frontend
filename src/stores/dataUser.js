@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId } from '../api';
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
@@ -93,6 +93,23 @@ export const useDataUserStore = defineStore('datauserStore', {
                 console.log('Finalizado');
             }
         },
+        async updateUser(userId, accessId, payload) {
+            try {
+                const { access, ...user } = payload;
+                await updateUser(userId, user);
+                await updateAccessId(accessId, access);
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+        async disableUser(accessId) {
+            try {
+                const payload = { active: false };
+                await updateAccessId(accessId, payload);
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
         async addPatients(payload) {
             try {
                 const { data, message } = await createPatients(payload);
@@ -111,14 +128,6 @@ export const useDataUserStore = defineStore('datauserStore', {
                 console.log(error.message);
             } finally {
                 console.log('Finalizada la carga de datos del perfil');
-            }
-        },
-        async updateUser(dni, payload) {
-            try {
-                const { data } = await updateUser(dni, payload);
-                this.dataUser = this.dataUser.map((item) => (item.dni === dni ? { ...item, ...data } : item));
-            } catch (error) {
-                console.log(error.message);
             }
         },
         async deleteUser(dni) {
