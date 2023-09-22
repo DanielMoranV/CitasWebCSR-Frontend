@@ -4,7 +4,7 @@ import { ref, onMounted, onBeforeMount } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { dformat, dparse } from '../../utils/day';
-import { saveAs } from 'file-saver';
+//import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 
 const toast = useToast();
@@ -86,50 +86,61 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
+const validateRequiredFields = () => {
+    const userValue = user.value.user;
+    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex;
+};
+
+const updateUser = async () => {
+    const payload = {
+        address: user.value.user.address,
+        birthDate: dparse(new Date(user.value.user.birthDate)),
+        civilStatus: user.value.user.civilStatus,
+        dni: user.value.user.dni,
+        documentType: user.value.user.documentType,
+        email: user.value.user.email,
+        name: user.value.user.name,
+        phone: user.value.user.phone,
+        photo: user.value.user.photo,
+        sex: user.value.user.sex,
+        surnames: user.value.user.surnames,
+        access: {
+            username: `${user.value.user.dni}-${user.value.roleId}`,
+            password: user.value.user.dni,
+            roleId: user.value.roleId
+        }
+    };
+
+    if (user.value.accessId) {
+        const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
+        if (userIndex !== -1) {
+            payload.access.accessId = user.value.accessId;
+            payload.userId = user.value.user.userId;
+
+            await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload);
+
+            user.value.roleName = roleNames.value[user.value.roleId];
+            users.value[userIndex] = user.value;
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
+        }
+    } else {
+        const dataUser = await dataUserStore.addUsers(payload);
+        user.value.accessId = dataUser.access[0].accessId;
+        user.value.roleName = roleNames.value[user.value.roleId];
+        user.value.status = 'offline';
+        users.value.push(user.value);
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Registrado', life: 3000 });
+    }
+
+    userDialog.value = false;
+    user.value = {};
+};
+
 const saveUser = async () => {
     submitted.value = true;
 
-    if (user.value.user.name && user.value.user.name.trim() && user.value.user.surnames && user.value.user.dni && user.value.user.birthDate && user.value.user.sex) {
-        const payload = {
-            address: user.value.user.address,
-            birthDate: user.value.user.birthDate,
-            civilStatus: user.value.user.civilStatus,
-            dni: user.value.user.dni,
-            documentType: user.value.user.documentType,
-            email: user.value.user.email,
-            name: user.value.user.name,
-            phone: user.value.user.phone,
-            photo: user.value.user.photo,
-            sex: user.value.user.sex,
-            surnames: user.value.user.surnames,
-            access: {
-                username: `${user.value.user.dni}-${user.value.roleId}`,
-                password: user.value.user.dni,
-                roleId: user.value.roleId
-            }
-        };
-        if (user.value.accessId) {
-            const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
-            if (userIndex !== -1) {
-                payload.access.accessId = user.value.accessId;
-                payload.userId = user.value.user.userId;
-                payload.birthDate = dparse(new Date(payload.birthDate));
-                await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload);
-                user.value.roleName = roleNames.value[user.value.roleId];
-                users.value[userIndex] = user.value;
-                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
-            }
-        } else {
-            const dataUser = await dataUserStore.addUsers(payload);
-            user.value.accessId = dataUser.access[0].accessId;
-            user.value.roleName = roleNames.value[user.value.roleId];
-            user.value.status = 'offline';
-            users.value.push(user.value);
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Registrado', life: 3000 });
-        }
-
-        userDialog.value = false;
-        user.value = {};
+    if (validateRequiredFields()) {
+        updateUser();
     }
 };
 
@@ -143,45 +154,35 @@ const confirmDeleteUser = (editUser) => {
     deleteUserDialog.value = true;
 };
 
-const deleteUser = () => {
-    users.value = users.value.filter((val) => val.id !== user.value.id);
+const deleteUser = async () => {
+    users.value = users.value.filter((val) => val.accessId !== user.value.accessId);
+    await dataUserStore.disableUser(user.value.accessId);
     deleteUserDialog.value = false;
     user.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
-};
-
-const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < users.value.length; i++) {
-        if (users.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
 };
 
 const exportCSV = () => {
     console.log(dt.value);
     dt.value.exportCSV();
 };
-const exportToExcel = () => {
-    // Obtén los datos de la tabla
-    const data = dt.value.value.map((row) => ({ ...row }));
+// const exportToExcel = () => {
+//     // Obtén los datos de la tabla
+//     const data = dt.value.value.map((row) => ({ ...row }));
 
-    // Crea una hoja de cálculo a partir de los datos
-    const worksheet = XLSX.utils.json_to_sheet(data);
+//     // Crea una hoja de cálculo a partir de los datos
+//     const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // Crea un libro de trabajo y añade la hoja de cálculo
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+//     // Crea un libro de trabajo y añade la hoja de cálculo
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
 
-    // Escribe el libro de trabajo a un archivo Excel
-    const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+//     // Escribe el libro de trabajo a un archivo Excel
+//     const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 
-    // Guarda el archivo en el sistema del cliente
-    saveAs(new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`);
-};
+//     // Guarda el archivo en el sistema del cliente
+//     saveAs(new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`);
+// };
 
 const onUpload = (event) => {
     const file = event.files[0];

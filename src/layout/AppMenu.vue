@@ -32,7 +32,8 @@ const defaultMenuModel = [
         label: 'Administración',
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard', roles: ['Administrador'] },
-            { label: 'Colaboradores', icon: 'pi pi-fw pi-users', to: '/users', roles: ['Administrador'] }
+            { label: 'Colaboradores', icon: 'pi pi-fw pi-users', to: '/users', roles: ['Administrador'] },
+            { label: 'Médicos', icon: 'pi pi-fw pi-plus', to: '/doctors', roles: ['Administrador'] }
         ]
     }
 ];
