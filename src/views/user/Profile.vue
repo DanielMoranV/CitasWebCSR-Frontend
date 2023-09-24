@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
-import { dformat } from '../../utils/day';
+import { dformat, dparse } from '../../utils/day';
 
 const toast = useToast();
 const authStore = useAuthStore();
@@ -51,16 +51,15 @@ const updateDataUser = async () => {
     loading.value = true;
     console.log(dataUser);
     const payload = {
+        birthDate: new Date(dparse(dataUser.birthDate)),
         email: dataUser.email,
         phone: dataUser.phone
     };
-    const response = await authStore.updateDataUser(payload);
-    console.log('response', response);
-    // if (response == 1) {
-    //     toast.add({ severity: 'success', summary: 'Datos actualizados correctamente', life: 4000 });
-    //     password.value = '';
-    //     password1.value = '';
-    // }
+    await authStore.updateDataUser(payload);
+
+    toast.add({ severity: 'success', summary: 'Datos actualizados correctamente', life: 4000 });
+    password.value = '';
+    password1.value = '';
     loading.value = false;
 };
 
@@ -97,7 +96,7 @@ onMounted(async () => {
                 </div>
                 <div class="field">
                     <label for="city">Fecha de Nacimiento</label>
-                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :modelValue="dataUser.birthDate" :disabled="true"></Calendar>
+                    <Calendar :showIcon="true" :showButtonBar="true" v-model="dataUser.birthDate" :modelValue="dataUser.birthDate" :disabled="false"></Calendar>
                 </div>
                 <div class="field">
                     <label for="phone">Teléfono</label>

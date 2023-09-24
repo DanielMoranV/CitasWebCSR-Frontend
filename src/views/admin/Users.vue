@@ -25,15 +25,12 @@ const sexItems = ref([
 ]);
 const roleItems = ref([
     { name: 'Administrador', code: 1 },
-    { name: 'Admisionista', code: 2 },
-    { name: 'Médico', code: 3 }
+    { name: 'Admisionista', code: 2 }
 ]);
 
 const roleNames = ref({
     1: 'Administrador',
-    2: 'Admisionista',
-    3: 'Médico',
-    4: 'Paciente'
+    2: 'Admisionista'
 });
 
 onBeforeMount(() => {
@@ -43,13 +40,14 @@ const filename = `listcolaborator-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
     await dataUserStore.getCollaborators().then((data) => {
         users.value = data.map((user) => {
-            let birthDate = dformat(user.birthDate, 'DD MMMM YYYY');
+            let birthDate = dformat(user.user.birthDate, 'DD MMMM YYYY');
             user.user.birthDate = birthDate;
             // Agrega el campo roleName basado en roleId
             user.roleName = roleNames.value[user.roleId];
             return user;
         });
     });
+    console.log(users.value);
 });
 
 const openNew = () => {
@@ -383,7 +381,7 @@ const initFilters = () => {
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="user"
-                            >Are you sure you want to delete <b>{{ user.name }}</b
+                            >¿Estás seguro de que quieres eliminar <b>{{ user.user.name }}</b
                             >?</span
                         >
                     </div>
@@ -396,7 +394,7 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteUsersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="user">Are you sure you want to delete the selected users?</span>
+                        <span v-if="user">¿Está seguro de que desea eliminar los usuarios seleccionados?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteUsersDialog = false" />

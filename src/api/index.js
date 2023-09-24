@@ -114,7 +114,7 @@ export const deleteCollaborator = (dni) => axios.delete(`/collaborator/${dni}`);
 // Medicos
 
 /**
- * @url GET /doctors
+ * @url GET /infodoctors
  * @since 1.0
  */
 export const getInfoDoctors = () => axios.get('/infodoctors');
@@ -124,6 +124,12 @@ export const getInfoDoctors = () => axios.get('/infodoctors');
  * @since 1.0
  */
 export const getInfoDoctor = (cmp) => axios.get(`/infodoctors/${cmp}`);
+
+/**
+ * @url GET /doctors
+ * @since 1.0
+ */
+export const getDoctors = () => axios.get('/doctors');
 
 /**
  * @url GET /users/:userdni/dependents

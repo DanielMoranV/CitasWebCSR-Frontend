@@ -61,8 +61,10 @@ export const useAuthStore = defineStore({
                 //const token = this.user.token;
                 const email = data.user.email;
                 const phone = data.user.phone;
+                const birthDate = data.user.birthDate;
                 this.user.user.email = email;
                 this.user.user.phone = phone;
+                this.user.user.birthDate = birthDate;
                 this.sessionUser = true;
                 this.role = this.user.role.name;
             } catch (error) {
