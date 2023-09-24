@@ -111,7 +111,13 @@ const updateUser = async () => {
         access: {
             username: `${user.value.user.dni}-${user.value.roleId}`,
             password: user.value.user.dni,
-            roleId: user.value.roleId
+            roleId: 3
+        },
+        Doctor: {
+            status: user.value.user.Doctor.status,
+            cmp: user.value.user.Doctor.cmp,
+            rne: user.value.user.Doctor.rne,
+            specialization: user.value.user.Doctor.specialization
         }
     };
 
@@ -125,15 +131,16 @@ const updateUser = async () => {
 
             user.value.roleName = roleNames.value[user.value.roleId];
             users.value[userIndex] = user.value;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Actualizado', life: 3000 });
         }
     } else {
+        console.log(payload);
         const dataUser = await dataUserStore.addUsers(payload);
         user.value.accessId = dataUser.access[0].accessId;
         user.value.roleName = roleNames.value[user.value.roleId];
         user.value.status = 'offline';
         users.value.push(user.value);
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Registrado', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Registrado', life: 3000 });
     }
 
     userDialog.value = false;
@@ -362,7 +369,7 @@ const initFilters = () => {
                     </div>
                     <div class="field">
                         <label for="dni">DNI</label>
-                        <InputText id="name" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
+                        <InputText id="dni" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
                         <small class="p-invalid" v-if="submitted && !user.user.dni">DNI es requerido.</small>
                     </div>
                     <div class="field">
@@ -372,8 +379,8 @@ const initFilters = () => {
                     </div>
 
                     <div class="field">
-                        <label for="name">Apellidos</label>
-                        <InputText id="name" v-model.trim="user.user.surnames" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
+                        <label for="surnames">Apellidos</label>
+                        <InputText id="surnames" v-model.trim="user.user.surnames" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
                         <small class="p-invalid" v-if="submitted && !user.user.surnames">Apellido es requerido.</small>
                     </div>
                     <div class="formgrid grid">
@@ -407,20 +414,10 @@ const initFilters = () => {
                             <InputText id="rne" v-model.trim="user.user.Doctor.rne" />
                         </div>
                     </div>
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="cpm">CMP</label>
-                            <InputText id="cmp" v-model.trim="user.user.Doctor.cmp" />
-                        </div>
-                        <div class="field col">
-                            <label for="rne">RNE</label>
-                            <InputText id="rne" v-model.trim="user.user.Doctor.rne" />
-                        </div>
-                    </div>
                     <div class="field">
-                        <label for="specialization">Apellidos</label>
-                        <InputText id="specialization" v-model.trim="user.user.specialization" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.specialization }" />
-                        <small class="p-invalid" v-if="submitted && !user.user.specialization">Especialidad es requerida.</small>
+                        <label for="specialization">Especialidad</label>
+                        <InputText id="specialization" v-model.trim="user.user.Doctor.specialization" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.Doctor.specialization }" />
+                        <small class="p-invalid" v-if="submitted && !user.user.Doctor.specialization">Especialidad es requerida.</small>
                     </div>
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
