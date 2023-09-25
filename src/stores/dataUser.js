@@ -95,7 +95,13 @@ export const useDataUserStore = defineStore('datauserStore', {
         },
         async updateUser(userId, accessId, payload) {
             try {
-                const { access, ...user } = payload;
+                const { access, Doctor, ...user } = payload;
+                console.log(payload);
+                const { personalizedPrices, ...dataDoctor } = Doctor;
+                console.log(user);
+                console.log(access);
+                console.log(personalizedPrices[0]);
+                console.log(dataDoctor);
                 await updateUser(userId, user);
                 await updateAccessId(accessId, access);
             } catch (error) {
