@@ -131,6 +131,9 @@ export const getInfoDoctor = (cmp) => axios.get(`/infodoctors/${cmp}`);
  */
 export const getDoctors = () => axios.get('/doctors');
 
+export const updateDoctor = (doctorId, payload) => axios.put(`/doctors/${doctorId}`, payload);
+export const updatePersonalizedPrice = (personalizedPriceId, payload) => axios.put(`/doctors/personalizedPrice/${personalizedPriceId}`, payload);
+
 /**
  * @url GET /users/:userdni/dependents
  * @since 1.0

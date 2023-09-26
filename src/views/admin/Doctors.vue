@@ -77,7 +77,13 @@ const openNew = () => {
                 rne: null,
                 specialization: null,
                 status: null,
-                userId: null
+                userId: null,
+                personalizedPrices: [
+                    {
+                        personalizedPrice: null,
+                        medicalServiceId: 1
+                    }
+                ]
             }
         }
     };
@@ -133,8 +139,18 @@ const updateUser = async () => {
         if (userIndex !== -1) {
             payload.access.accessId = user.value.accessId;
             payload.userId = user.value.user.userId;
-
-            await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload);
+            payload.Doctor.doctorId = user.value.user.Doctor.doctorId;
+            // payload.Doctor.personalizedPrices = [
+            //     {
+            //         personalizedPriceId: user.value.user.Doctor.personalizedPrices[0].personalizedPriceId,
+            //         doctorId: user.value.user.Doctor.doctorId
+            //     }
+            // ];
+            payload.Doctor.personalizedPrices[0].personalizedPriceId = user.value.user.Doctor.personalizedPrices[0].personalizedPriceId;
+            payload.Doctor.personalizedPrices[0].doctorId = user.value.user.Doctor.doctorId;
+            console.log('user:', user.value);
+            console.log('payload', payload);
+            await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload.Doctor.doctorId, payload.Doctor.personalizedPrices[0].personalizedPriceId, payload);
 
             user.value.roleName = roleNames.value[user.value.roleId];
             users.value[userIndex] = user.value;

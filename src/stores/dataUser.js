@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId, updateDoctor, updatePersonalizedPrice } from '../api';
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
@@ -93,7 +93,7 @@ export const useDataUserStore = defineStore('datauserStore', {
                 console.log('Finalizado');
             }
         },
-        async updateUser(userId, accessId, payload) {
+        async updateUser(userId, accessId, doctorId, personalizedPriceId, payload) {
             try {
                 const { access, Doctor, ...user } = payload;
                 console.log(payload);
@@ -104,6 +104,8 @@ export const useDataUserStore = defineStore('datauserStore', {
                 console.log(dataDoctor);
                 await updateUser(userId, user);
                 await updateAccessId(accessId, access);
+                await updateDoctor(doctorId, dataDoctor);
+                await updatePersonalizedPrice(personalizedPriceId, personalizedPrices[0]);
             } catch (error) {
                 console.log(error.message);
             }
