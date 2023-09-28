@@ -7,7 +7,9 @@ import { useDataUserStore } from '../../stores/dataUser';
 import { dformat, dparse } from '../../utils/day';
 //import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const toast = useToast();
 const dataDoctorStore = useDataDoctorStore();
 const dataUserStore = useDataUserStore();
@@ -22,10 +24,14 @@ const selectedUsers = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
+const schedules = ref(null);
 const sexItems = ref([
     { name: 'Masculino', code: 'Masculino' },
     { name: 'Femenino', code: 'Femenino' }
 ]);
+const nextSchedules = () => {
+    router.push('/doctors/schedule');
+};
 const roleItems = ref([{ name: 'Médico', code: 3 }]);
 
 const roleNames = ref({
@@ -99,7 +105,7 @@ const hideDialog = () => {
 
 const validateRequiredFields = () => {
     const userValue = user.value.user;
-    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex;
+    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && user.value.user.Doctor.status;
 };
 
 const updateUser = async () => {
@@ -157,12 +163,20 @@ const updateUser = async () => {
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Actualizado', life: 3000 });
         }
     } else {
+        console.log(payload);
         const dataUser = await dataUserStore.addUsers(payload);
-        user.value.accessId = dataUser.access[0].accessId;
-        user.value.roleName = roleNames.value[dataUser.access[0].roleId];
-        user.value.status = 'offline';
-        users.value.push(user.value);
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Registrado', life: 3000 });
+        console.log(dataUser);
+        if (dataUser == 'Violación de la restricción única.') {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'DNI o CMP ya registrados, corregir', life: 3000 });
+            return;
+        } else {
+            console.log(dataUser.value);
+            user.value.accessId = dataUser.access[0].accessId;
+            user.value.roleName = roleNames.value[dataUser.access[0].roleId];
+            user.value.status = 'offline';
+            users.value.push(user.value);
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Registrado', life: 3000 });
+        }
     }
 
     userDialog.value = false;
@@ -177,6 +191,10 @@ const saveUser = async () => {
     } else {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Datos imcompletos por favor llenar todo el formulario', life: 3000 });
     }
+};
+const saveSchedules = () => {
+    submitted.value = true;
+    console.log(schedules.value);
 };
 
 const editUser = (editUser) => {
@@ -359,7 +377,7 @@ const initFilters = () => {
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editUser(slotProps.data)" />
-                            <Button icon="fa-solid fa-user-doctor" class="p-button-rounded p-button-info mr-2" @click="priceDoctor(slotProps.data)" />
+                            <Button icon="pi pi-calendar-plus" class="p-button-rounded p-button-info mr-2" @click="nextSchedules(slotProps.data)" />
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteUser(slotProps.data)" />
                         </template>
                     </Column>
@@ -457,82 +475,16 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="priceDialog" :style="{ width: '500px' }" header="Tarifario Consultas Médicas" :modal="true" class="p-fluid">
+                <Dialog v-model:visible="priceDialog" :style="{ width: '500px' }" header="Hoarios de consulta" :modal="true" class="p-fluid">
                     <!-- <img :src="contextPath + 'demo/images/user/' + user.image" :alt="user.image" v-if="user.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" /> -->
                     <div class="field">
-                        <label for="dni">Servicio Médico</label>
-                        <InputText id="dni" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
+                        <label for="dni">Fecha</label>
+                        <Calendar :showIcon="true" :showButtonBar="true" v-model="schedules" dateFormat="dd/mm/yy" required="true" selectionMode="multiple"></Calendar>
                         <small class="p-invalid" v-if="submitted && !user.user.dni">DNI es requerido.</small>
                     </div>
-                    <!-- <div class="field">
-                        <label class="mb-3">Tipo de documento</label>
-                        <div class="formgrid grid">
-                            <div class="field-radiobutton col-4">
-                                <RadioButton id="dni" name="option" value="DNI" v-model="user.user.documentType" />
-                                <label for="dni">DNI</label>
-                            </div>
-                            <div class="field-radiobutton col-4">
-                                <RadioButton id="ce" name="option" value="CE" v-model="user.user.documentType" />
-                                <label for="ce">CE</label>
-                            </div>
-                            <div class="field-radiobutton col-4">
-                                <RadioButton id="pasaport" name="option" value="passport" v-model="user.user.documentType" />
-                                <label for="pasaport">Pasaporte</label>
-                            </div>
-                        </div>
-                    </div>
-  
-                    <div class="field">
-                        <label for="name">Nombre</label>
-                        <InputText id="name" v-model.trim="user.user.name" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.name }" />
-                        <small class="p-invalid" v-if="submitted && !user.user.name">Nombre es requerido.</small>
-                    </div>
-
-                    <div class="field">
-                        <label for="surnames">Apellidos</label>
-                        <InputText id="surnames" v-model.trim="user.user.surnames" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.surnames }" />
-                        <small class="p-invalid" v-if="submitted && !user.user.surnames">Apellido es requerido.</small>
-                    </div>
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="birthDate">Fecha de Nacimiento</label>
-                            <Calendar :showIcon="true" :showButtonBar="true" v-model="user.user.birthDate" dateFormat="dd/mm/yy" required="true"></Calendar>
-                            <small class="p-invalid" v-if="submitted && !user.birthDate">Fecha de nacimiento es requerido.</small>
-                        </div>
-                        <div class="field col">
-                            <label for="phone">Teléfono</label>
-                            <InputText id="phone" v-model.trim="user.user.phone" />
-                        </div>
-                    </div>
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="sex">Sexo</label>
-                            <Dropdown id="sex" v-model="user.user.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
-                            <small class="p-invalid" v-if="submitted && !user.user.sex">Sexo es requerido.</small>
-                        </div>
-                        <div class="field col">
-                            <label for="status">Estado</label><br />
-                            <InputSwitch id="status" v-model.trim="user.user.Doctor.status" />
-                        </div>
-                    </div>
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="cpm">CMP</label>
-                            <InputText id="cmp" v-model.trim="user.user.Doctor.cmp" />
-                        </div>
-                        <div class="field col">
-                            <label for="rne">RNE</label>
-                            <InputText id="rne" v-model.trim="user.user.Doctor.rne" />
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label for="specialization">Especialidad</label>
-                        <InputText id="specialization" v-model.trim="user.user.Doctor.specialization" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.Doctor.specialization }" />
-                        <small class="p-invalid" v-if="submitted && !user.user.Doctor.specialization">Especialidad es requerida.</small>
-                    </div> -->
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveUser" />
+                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveSchedules" />
                     </template>
                 </Dialog>
 

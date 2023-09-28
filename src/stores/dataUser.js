@@ -88,7 +88,8 @@ export const useDataUserStore = defineStore('datauserStore', {
                 this.dataUser = data;
                 return data;
             } catch (error) {
-                console.log(error);
+                this.msg = error.message;
+                return this.msg;
             } finally {
                 console.log('Finalizado');
             }
