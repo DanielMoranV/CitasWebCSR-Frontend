@@ -66,7 +66,6 @@ export const useDataUserStore = defineStore('datauserStore', {
             try {
                 const { data } = await updateUser(dependentId, payload);
                 this.dependents = this.dependents.map((item) => (item.dependentId === dependentId ? { ...item, ...data } : item));
-                console.log(this.dependents);
             } catch (error) {
                 console.log(error.message);
             }
@@ -97,12 +96,7 @@ export const useDataUserStore = defineStore('datauserStore', {
         async updateUser(userId, accessId, doctorId, personalizedPriceId, payload) {
             try {
                 const { access, Doctor, ...user } = payload;
-                console.log(payload);
                 const { personalizedPrices, ...dataDoctor } = Doctor;
-                console.log(user);
-                console.log(access);
-                console.log(personalizedPrices[0]);
-                console.log(dataDoctor);
                 await updateUser(userId, user);
                 await updateAccessId(accessId, access);
                 await updateDoctor(doctorId, dataDoctor);

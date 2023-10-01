@@ -67,9 +67,6 @@ function updateMenuModel() {
         .filter((section) => section.items.length > 0);
 
     // Si existe un objeto doctor en dataDoctorStore, se muestra un mensaje en la consola
-    if (hasDoctor) {
-        console.log(dataDoctorStore.doctor);
-    }
 }
 onMounted(async () => {
     await authStore.currentUser();

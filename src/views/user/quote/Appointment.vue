@@ -2,6 +2,7 @@
 import { useDataDoctorStore } from '../../../stores/dataDoctor';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { dformat, dparse } from '../../../utils/day';
 
 const router = useRouter();
 
@@ -9,8 +10,11 @@ import CountryService from '@/service/CountryService';
 const countryService = new CountryService();
 
 const dataDoctorStore = useDataDoctorStore();
+
 const medico = ref([]);
 const listboxServices = ref([]);
+const schedules = ref(null);
+const schedule = ref(null);
 
 const date = ref();
 const today = new Date();
@@ -21,7 +25,7 @@ const oneWeekLater = new Date(today);
 oneWeekLater.setDate(today.getDate() + daysToAdd);
 
 // Array de fechas disponibles para el médico
-const availableDates = ['2023-09-05', '2023-09-07', '2023-09-10'];
+const availableDates = ref([]);
 
 // Crea un array de fechas desde today hasta oneWeekLater
 const fechasArray = [];
@@ -30,7 +34,7 @@ for (let fecha = new Date(today); fecha <= oneWeekLater; fecha.setDate(fecha.get
 }
 
 // Filtra las fechas disponibles
-const fechasDeshabilitadas = fechasArray.filter((fecha) => !availableDates.includes(fecha.toISOString().split('T')[0]));
+const fechasDeshabilitadas = fechasArray.filter((fecha) => !availableDates.value.includes(fecha.toISOString().split('T')[0]));
 const formattedDate = computed(() => {
     return (date) => {
         const year = date.year;
@@ -62,12 +66,23 @@ const clickNext = async () => {
     setTimeout(() => (loading.value = false), 1000);
 };
 
-onMounted(() => {
+onMounted(async () => {
     countryService.getCountries().then((data) => (autoValue.value = data));
     console.log(autoValue.value);
 
     medico.value = dataDoctorStore.doctor[0];
-
+    console.log(medico.value);
+    await dataDoctorStore.getDoctorSchedule(medico.value.doctor_id).then((data) => {
+        schedules.value = data.map((schedule) => {
+            let startTime = dformat(schedule.startTime, 'hh:mm A');
+            let endTime = dformat(schedule.endTime, 'hh:mm A');
+            schedule.startTime = startTime;
+            schedule.endTime = endTime;
+            availableDates.value.push(schedule.day);
+            return schedule;
+        });
+    });
+    console.log(schedules.value);
     listboxServices.value = dataDoctorStore.doctor.map((service) => ({
         name: `${service.name} S/.${service.price}`,
         medical_service_id: service.medical_service_id
@@ -105,7 +120,7 @@ onMounted(() => {
         </div>
         <div class="field grid">
             <label for="hour" class="col-12 mb-2 md:col-2 md:mb-0">Precio Consulta</label>
-            <div class="col-12 md:col-10"><InputText id="price" type="text" :disabled="true" /></div>
+            <div class="col-12 md:col-10"><InputText id="price" type="text" :disabled="true" v-model="medico.price" /></div>
         </div>
     </div>
     <Button label="Siguiente" icon="pi pi-arrow-right" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="clickNext"></Button>

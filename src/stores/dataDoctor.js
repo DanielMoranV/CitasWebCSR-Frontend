@@ -1,13 +1,14 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { getInfoDoctors, getInfoDoctor, getDoctors } from '../api';
+import { getInfoDoctors, getInfoDoctor, getDoctors, getDoctorSchedule, createtDoctorSchedule } from '../api';
 
 export const useDataDoctorStore = defineStore({
     id: 'doctors',
     state: () => ({
         doctors: cache.getItem('doctors'),
         doctor: cache.getItem('doctor'),
+        schedule: cache.getItem('schedule'),
         msg: {},
         role: 'Invitado',
         loadingUser: false
@@ -50,7 +51,26 @@ export const useDataDoctorStore = defineStore({
             } catch (error) {
                 console.log(error);
             }
+        },
+        async getDoctorSchedule(doctorId) {
+            try {
+                const { data } = await getDoctorSchedule(doctorId);
+                cache.setItem('schedule', data);
+                this.schedule = data;
+                return this.schedule;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async addDoctorSchedule(payload) {
+            try {
+                const { data } = await createtDoctorSchedule(payload);
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
         }
+
         // buscar si el dni existe
     }
 });

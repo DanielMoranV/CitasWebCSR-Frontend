@@ -77,13 +77,12 @@ const router = createRouter({
                 {
                     path: '/doctors',
                     name: 'doctors',
-                    component: () => import('@/views/admin/Doctors.vue'),
-                    children: [
-                        {
-                            path: '/doctors/schedule',
-                            component: () => import('@/views/admin/Schedule.vue')
-                        }
-                    ]
+                    component: () => import('@/views/admin/Doctors.vue')
+                },
+                {
+                    path: '/timetable',
+                    name: 'timetable',
+                    component: () => import('@/views/admin/Timetable.vue')
                 }
             ]
         },

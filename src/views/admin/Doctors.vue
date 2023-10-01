@@ -8,6 +8,7 @@ import { dformat, dparse } from '../../utils/day';
 //import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { useRouter } from 'vue-router';
+import cache from '../../utils/cache';
 
 const router = useRouter();
 const toast = useToast();
@@ -24,13 +25,16 @@ const selectedUsers = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-const schedules = ref(null);
+
 const sexItems = ref([
     { name: 'Masculino', code: 'Masculino' },
     { name: 'Femenino', code: 'Femenino' }
 ]);
-const nextSchedules = () => {
-    router.push('/doctors/schedule');
+const nextSchedule = (dataDoctor) => {
+    dataDoctorStore.doctor = dataDoctor;
+    cache.setItem('doctor', dataDoctor);
+
+    router.push('/timetable');
 };
 const roleItems = ref([{ name: 'Médico', code: 3 }]);
 
@@ -192,19 +196,11 @@ const saveUser = async () => {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Datos imcompletos por favor llenar todo el formulario', life: 3000 });
     }
 };
-const saveSchedules = () => {
-    submitted.value = true;
-    console.log(schedules.value);
-};
 
 const editUser = (editUser) => {
     console.log(editUser);
     user.value = { ...editUser };
     userDialog.value = true;
-};
-const priceDoctor = (editUser) => {
-    user.value = { ...editUser };
-    priceDialog.value = true;
 };
 
 const confirmDeleteUser = (editUser) => {
@@ -377,7 +373,7 @@ const initFilters = () => {
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editUser(slotProps.data)" />
-                            <Button icon="pi pi-calendar-plus" class="p-button-rounded p-button-info mr-2" @click="nextSchedules(slotProps.data)" />
+                            <Button icon="pi pi-calendar-plus" class="p-button-rounded p-button-info mr-2" @click="nextSchedule(slotProps.data)" />
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteUser(slotProps.data)" />
                         </template>
                     </Column>
@@ -472,19 +468,6 @@ const initFilters = () => {
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
                         <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveUser" />
-                    </template>
-                </Dialog>
-
-                <Dialog v-model:visible="priceDialog" :style="{ width: '500px' }" header="Hoarios de consulta" :modal="true" class="p-fluid">
-                    <!-- <img :src="contextPath + 'demo/images/user/' + user.image" :alt="user.image" v-if="user.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" /> -->
-                    <div class="field">
-                        <label for="dni">Fecha</label>
-                        <Calendar :showIcon="true" :showButtonBar="true" v-model="schedules" dateFormat="dd/mm/yy" required="true" selectionMode="multiple"></Calendar>
-                        <small class="p-invalid" v-if="submitted && !user.user.dni">DNI es requerido.</small>
-                    </div>
-                    <template #footer>
-                        <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveSchedules" />
                     </template>
                 </Dialog>
 

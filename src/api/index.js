@@ -1,159 +1,40 @@
-/* eslint-disable prettier/prettier */
 import axios from './axios';
 
-// Accesos
-/**
- * @url POST /access
- * @since 1.0
- */
-
+// ACCESOS
 export const sigin = (payload) => axios.post('/access', payload);
-
-/**
- * @url POST /access:username
- * @since 1.0
- */
 export const createAccessUser = (username, payload) => axios.post(`/access/${username}`, payload);
-
-/**
- * @url GET /access
- * @since 1.0
- */
 export const fetchAccess = () => axios.get('/access');
-
-/**
- * @url GET /access:username
- * @since 1.0
- */
 export const getAccessUser = (username, payload) => axios.get(`/access/${username}`, payload);
-
-/**
- * @url PUT /access:username
- * @since 1.0
- */
 export const updateAccessUser = (username, payload) => axios.put(`/access/${username}`, payload);
 export const updateAccessId = (accessId, payload) => axios.put(`/access/accessId/${accessId}`, payload);
 
-// Usuarios
-/**
- * @url GET /users
- * @since 1.0
- */
+// USUARIOS
 export const fetchUsers = () => axios.get('/users');
-
-/**
- * @url PUT /users/:dni
- * @since 1.0
- */
 export const updateUser = (dni, payload) => axios.put(`/users/${dni}`, payload);
-/*
-
-/**
- * @url POST /users
- * @since 1.0
- */
 export const createUser = (payload) => axios.post('/users', payload);
-
-/**
- * @url POST /users/patients
- * @since 1.0
- */
 export const createPatients = (payload) => axios.post('/users/patients', payload);
-
-/**
- * @url GET /users/:id
- * @since 1.0
- */
 export const getUser = (dni) => axios.get(`/users/${dni}`);
-
-/**
- * @url DELETE /users/:id
- * @since 1.0
- */
 export const deleteUser = (dni) => axios.delete(`/users/${dni}`);
-
-/**
- * @url GET /users/currentuser
- * @since 1.0
- */
 export const currentUser = () => axios.get('/users/currentuser');
 
-// Colaboradores
-
-/**
- * @url GET /collaborator
- * @since 1.0
- */
+// COLABORADORES
 export const fetchCollaborators = () => axios.get('/collaborators');
-
-/**
- * @url PUT /collaborator/:dni
- * @since 1.0
- */
 export const updateCollaborator = (dni, payload) => axios.put(`/collaborator/${dni}`, payload);
-/*
-
-/**
- * @url POST /collaborator
- * @since 1.0
- */
 export const createCollaborator = (payload) => axios.post('/collaborator', payload);
-
-/**
- * @url GET /collaborator/:id
- * @since 1.0
- */
 export const getCollaborator = (dni) => axios.get(`/collaborator/${dni}`);
-
-/**
- * @url DELETE /collaborator/:id
- * @since 1.0
- */
 export const deleteCollaborator = (dni) => axios.delete(`/collaborator/${dni}`);
 
-// Medicos
-
-/**
- * @url GET /infodoctors
- * @since 1.0
- */
+// MÉDICOS
 export const getInfoDoctors = () => axios.get('/infodoctors');
-
-/**
- * @url GET /doctor/:cmp
- * @since 1.0
- */
 export const getInfoDoctor = (cmp) => axios.get(`/infodoctors/${cmp}`);
-
-/**
- * @url GET /doctors
- * @since 1.0
- */
 export const getDoctors = () => axios.get('/doctors');
-
 export const updateDoctor = (doctorId, payload) => axios.put(`/doctors/${doctorId}`, payload);
 export const updatePersonalizedPrice = (personalizedPriceId, payload) => axios.put(`/doctors/personalizedPrice/${personalizedPriceId}`, payload);
+export const getDoctorSchedule = (doctorId) => axios.get(`doctors/${doctorId}/schedule`);
+export const createtDoctorSchedule = (payload) => axios.post(`doctors/schedule`, payload);
 
-/**
- * @url GET /users/:userdni/dependents
- * @since 1.0
- */
+// DEPENDIENTES
 export const getDependents = (userdni) => axios.get(`/users/${userdni}/dependents`);
-
-/**
- * @url POST /dependents
- * @since 1.0
- */
 export const createDependents = (payload) => axios.post('/users/dependents', payload);
-
-/**
- * @url PUT /collaborator/:dni
- * @since 1.0
- */
 export const updateDependent = (dependentId, payload) => axios.put(`/users/dependents/${dependentId}`, payload);
-
-/**
- * @url DELETE /collaborator/:id
- * @since 1.0
- */
 export const deleteDependent = (dependentId) => axios.delete(`/users/dependents/${dependentId}`);
