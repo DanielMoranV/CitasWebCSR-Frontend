@@ -1,40 +1,31 @@
 <script setup>
 import { useDataDoctorStore } from '../../../stores/dataDoctor';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { dformat, dparse } from '../../../utils/day';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
-
-import CountryService from '@/service/CountryService';
-const countryService = new CountryService();
-
-const dataDoctorStore = useDataDoctorStore();
-
-const medico = ref([]);
-const listboxServices = ref([]);
+const toast = useToast();
 const schedules = ref(null);
+const timeSlot = ref(null);
+const selectedTimeSlot = ref(null);
+const autoFilteredValue = ref([]);
 const schedule = ref(null);
-
+const availableSchedule = ref([]);
+const disabledDates = ref([]);
+const formattedAvailableSchedule = ref([]);
+const dataDoctorStore = useDataDoctorStore();
+const medico = ref([]);
 const date = ref();
+const selectedDate = ref(null);
 const today = new Date();
-const daysToAdd = 15;
+const daysToAdd = 29;
 
 // Calcula la fecha una semana después de hoy
 const oneWeekLater = new Date(today);
 oneWeekLater.setDate(today.getDate() + daysToAdd);
 
-// Array de fechas disponibles para el médico
-const availableDates = ref([]);
-
-// Crea un array de fechas desde today hasta oneWeekLater
-const fechasArray = [];
-for (let fecha = new Date(today); fecha <= oneWeekLater; fecha.setDate(fecha.getDate() + 1)) {
-    fechasArray.push(new Date(fecha));
-}
-
-// Filtra las fechas disponibles
-const fechasDeshabilitadas = fechasArray.filter((fecha) => !availableDates.value.includes(fecha.toISOString().split('T')[0]));
 const formattedDate = computed(() => {
     return (date) => {
         const year = date.year;
@@ -44,20 +35,54 @@ const formattedDate = computed(() => {
     };
 });
 
-const autoValue = ref(null);
-const selectedAutoValue = ref(null);
-const autoFilteredValue = ref([]);
-const searchCountry = (event) => {
-    setTimeout(() => {
+// Función que se ejecutará cuando date cambie
+const handleDateChange = (newDate) => {
+    // Realiza alguna acción en respuesta al cambio de fecha
+    const formattedNewDate = dformat(newDate, 'YYYY-MM-DD');
+
+    // Filtra los elementos de schedule.value que coincidan con la nueva fecha
+    const filteredSchedules = schedules.value.filter((item) => {
+        const itemDate = dformat(new Date(item.day), 'YYYY-MM-DD');
+        return itemDate === formattedNewDate;
+    });
+
+    // Ahora, filteredSchedules contiene los elementos de schedule.value que coinciden con la nueva fecha
+    console.log('Schedules para la fecha seleccionada:', filteredSchedules[0].timeSlot);
+    const timeSlotValues = [];
+    filteredSchedules[0].timeSlot.forEach((slot) => {
+        timeSlotValues.push({
+            code: slot.timeSlotId,
+            name: dformat(slot.orderlyTurn, 'HH:MM A')
+        });
+    });
+    // Asigna timeSlotValues a timeSlot.value
+    timeSlot.value = timeSlotValues;
+
+    console.log(timeSlot.value);
+};
+const searchTimeSlot = (event) => {
+    if (timeSlot.value) {
         if (!event.query.trim().length) {
-            autoFilteredValue.value = [...autoValue.value];
+            autoFilteredValue.value = [...timeSlot.value];
+            console.log(autoFilteredValue.value);
         } else {
-            autoFilteredValue.value = autoValue.value.filter((country) => {
-                return country.name.toLowerCase().startsWith(event.query.toLowerCase());
+            autoFilteredValue.value = timeSlot.value.filter((timeSlot) => {
+                console.log(timeSlot.value);
+                return timeSlot.name.toLowerCase().startsWith(event.query.toLowerCase());
             });
         }
-    }, 250);
+    } else {
+        console.log('nelll');
+        toast.add({ severity: 'warn', summary: 'Alerta', detail: 'Seleccione una fecha de cita Médica', life: 3000 });
+    }
 };
+
+// Observa el cambio en la variable date
+watch(date, (newDate) => {
+    selectedDate.value = newDate;
+    handleDateChange(newDate);
+});
+
 const loading = ref(false);
 const clickNext = async () => {
     loading.value = true;
@@ -67,26 +92,29 @@ const clickNext = async () => {
 };
 
 onMounted(async () => {
-    countryService.getCountries().then((data) => (autoValue.value = data));
-    console.log(autoValue.value);
-
     medico.value = dataDoctorStore.doctor[0];
-    console.log(medico.value);
     await dataDoctorStore.getDoctorSchedule(medico.value.doctor_id).then((data) => {
         schedules.value = data.map((schedule) => {
             let startTime = dformat(schedule.startTime, 'hh:mm A');
             let endTime = dformat(schedule.endTime, 'hh:mm A');
             schedule.startTime = startTime;
             schedule.endTime = endTime;
-            availableDates.value.push(schedule.day);
+            availableSchedule.value.push(new Date(schedule.day));
             return schedule;
         });
     });
-    console.log(schedules.value);
-    listboxServices.value = dataDoctorStore.doctor.map((service) => ({
-        name: `${service.name} S/.${service.price}`,
-        medical_service_id: service.medical_service_id
-    }));
+    console.log(medico.value);
+
+    // Crea un array de fechas desde today hasta oneWeekLater
+    const dateArray = [];
+    for (let fecha = new Date(today); fecha <= oneWeekLater; fecha.setDate(fecha.getDate() + 1)) {
+        dateArray.push(new Date(fecha));
+    }
+    // Formatea las fechas en availableSchedule para que coincidan con el formato de dateArray
+    formattedAvailableSchedule.value = availableSchedule.value.map((fecha) => dformat(fecha, 'YYYY-MM-DD'));
+
+    // Filtra las fechas disponibles
+    disabledDates.value = dateArray.filter((fecha) => !formattedAvailableSchedule.value.includes(dformat(fecha, 'YYYY-MM-DD')));
 });
 </script>
 <template>
@@ -102,9 +130,9 @@ onMounted(async () => {
         <div class="field grid">
             <label for="date" class="col-12 mb-2 md:col-2 md:mb-0">Fecha</label>
             <div class="col-12 md:col-10">
-                <Calendar :showIcon="true" v-model="date" :manualInput="false" :minDate="today" :maxDate="oneWeekLater" :disabledDates="fechasDeshabilitadas">
+                <Calendar :showIcon="true" v-model="date" :manualInput="false" :minDate="today" :maxDate="oneWeekLater" :disabledDates="disabledDates">
                     <template #date="slotProps">
-                        <div v-if="availableDates.includes(formattedDate(slotProps.date))" style="padding: 50%; color: green; font-size: 1.1em; background-color: lightgreen; border-radius: 50%" class="available-date">
+                        <div v-if="formattedAvailableSchedule.includes(formattedDate(slotProps.date))" style="padding: 50%; color: green; font-size: 1.1em; background-color: lightgreen; border-radius: 50%" class="available-date">
                             {{ slotProps.date.day }}
                         </div>
                         <div v-else>{{ slotProps.date.day }}</div>
@@ -115,12 +143,13 @@ onMounted(async () => {
         <div class="field grid">
             <label for="hour" class="col-12 mb-2 md:col-2 md:mb-0">Horario</label>
             <div class="col-12 md:col-10">
-                <AutoComplete placeholder="Hora disponible" id="dd" :dropdown="true" v-model="selectedAutoValue" :suggestions="autoFilteredValue" @complete="searchCountry($event)" field="name" />
+                <Toast />
+                <AutoComplete placeholder="Hora disponible" id="timeSlot" :dropdown="true" v-model="selectedTimeSlot" :suggestions="autoFilteredValue" @complete="searchTimeSlot($event)" field="name" />
             </div>
         </div>
         <div class="field grid">
             <label for="hour" class="col-12 mb-2 md:col-2 md:mb-0">Precio Consulta</label>
-            <div class="col-12 md:col-10"><InputText id="price" type="text" :disabled="true" v-model="medico.price" /></div>
+            <div class="col-12 md:col-10"><InputText id="price" type="text" v-model="medico.price" :disabled="true" /></div>
         </div>
     </div>
     <Button label="Siguiente" icon="pi pi-arrow-right" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="clickNext"></Button>
