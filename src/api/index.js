@@ -38,3 +38,6 @@ export const getDependents = (userdni) => axios.get(`/users/${userdni}/dependent
 export const createDependents = (payload) => axios.post('/users/dependents', payload);
 export const updateDependent = (dependentId, payload) => axios.put(`/users/dependents/${dependentId}`, payload);
 export const deleteDependent = (dependentId) => axios.delete(`/users/dependents/${dependentId}`);
+
+// Citas Medicas
+export const createappointment = (payload) => axios.post('/appointment', payload);

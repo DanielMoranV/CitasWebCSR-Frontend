@@ -19,7 +19,7 @@ const nestedRouteItems = ref([
 <template>
     <div class="card card-w-title">
         <h5>Registro de Citas medicas</h5>
-        <p>Steps and TabMenu are integrated with the same child routes.</p>
+        <br />
         <Steps :model="nestedRouteItems" :readonly="true" />
         <router-view />
     </div>

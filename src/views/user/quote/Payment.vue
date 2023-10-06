@@ -38,9 +38,21 @@ const payment = () => {
     </div>
     <div class="grid justify-content-center">
         <div class="col-12 md:col-6 lg:col-4 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
-            <div style="height: 210px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))">
+            <div style="height: 250px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))">
                 <div class="p-3 surface-card h-full" style="border-radius: 8px">
-                    <h5 class="mb-2 text-900">Ticket Nº : 001-0001</h5>
+                    <div class="field">
+                        <label class="mb-3">Tipo de comprobante</label>
+                        <div class="formgrid grid">
+                            <div class="field-radiobutton col-4">
+                                <RadioButton id="boleta" name="option" value="Boleta" v-model="documentType" />
+                                <label for="boleta">Boleta</label>
+                            </div>
+                            <div class="field-radiobutton col-4">
+                                <RadioButton id="factura" name="option" value="Factura" v-model="documentType" />
+                                <label for="factura">Factura</label>
+                            </div>
+                        </div>
+                    </div>
                     <p class="mt-3 mb-1">Medico :</p>
                     <p class="mb-1">Especialidad :</p>
                     <p class="mb-1">Paciente :</p>
@@ -95,5 +107,5 @@ const payment = () => {
         </div>
         <Button label="Tarjeta" icon="pi pi-money-bill" class="p-button-raised p-button-success mr-2 mt-3 col-12" @click="payment" />
     </Dialog>
-    <Button label="Método de pago" icon="pi pi-money-bill" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="openPaymentMethod"></Button>
+    <Button label="Método de pago" icon="pi pi-money-bill" class="p-button-success col-12 md:col-3 mr-2 mb-2 mt-2" :loading="loading" @click="openPaymentMethod"></Button>
 </template>

@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
 import { sigin, currentUser, updateAccessUser, updateUser } from '../api';

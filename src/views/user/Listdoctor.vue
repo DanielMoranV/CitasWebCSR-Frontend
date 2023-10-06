@@ -18,11 +18,11 @@ const users = ref(null);
 const dt = ref(null);
 const filters = ref({});
 
-const nextSchedule = (dataDoctor) => {
+const appointment = async (dataDoctor) => {
     dataDoctorStore.doctor = dataDoctor;
     cache.setItem('doctor', dataDoctor);
-
-    router.push('/timetable');
+    await dataDoctorStore.getInfoDoctor(dataDoctor.user.Doctor.cmp);
+    router.push('/quotes');
 };
 
 const roleNames = ref({
@@ -43,6 +43,7 @@ onMounted(async () => {
             return user;
         });
     });
+    console.log(users.value);
 });
 
 const initFilters = () => {
@@ -110,16 +111,16 @@ const initFilters = () => {
                             {{ slotProps.data.user.Doctor.specialization }}
                         </template>
                     </Column>
-                    <Column field="status" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="user.Doctor.personalizedPrices[0].personalizedPrice" header="Precio Consulta" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Status</span>
-                            <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status }}</span>
+                            <span class="p-column-title">Precio</span>
+                            {{ slotProps.data.user.Doctor.personalizedPrices[0].personalizedPrice }}
                         </template>
                     </Column>
 
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
-                            <Button icon="pi pi-calendar-plus" class="p-button-rounded p-button-info mr-2" @click="nextSchedule(slotProps.data)" />
+                            <Button icon="pi pi-calendar-plus" class="p-button-rounded p-button-info mr-2" @click="appointment(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>

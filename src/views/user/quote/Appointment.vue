@@ -1,12 +1,19 @@
 <script setup>
 import { useDataDoctorStore } from '../../../stores/dataDoctor';
+import { useAuthStore } from '../../../stores/auth';
+import { useDataAppointmentStore } from '../../../stores/dataAppointment';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { dformat, dparse } from '../../../utils/day';
+import { dformat } from '../../../utils/day';
+
 import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
 const toast = useToast();
+const dataDoctorStore = useDataDoctorStore();
+const dataAuthStore = useAuthStore();
+const dataAppointmentStore = useDataAppointmentStore();
+
 const schedules = ref(null);
 const timeSlot = ref(null);
 const selectedTimeSlot = ref(null);
@@ -15,7 +22,6 @@ const schedule = ref(null);
 const availableSchedule = ref([]);
 const disabledDates = ref([]);
 const formattedAvailableSchedule = ref([]);
-const dataDoctorStore = useDataDoctorStore();
 const medico = ref([]);
 const date = ref();
 const selectedDate = ref(null);
@@ -39,7 +45,7 @@ const formattedDate = computed(() => {
 const handleDateChange = (newDate) => {
     // Realiza alguna acción en respuesta al cambio de fecha
     const formattedNewDate = dformat(newDate, 'YYYY-MM-DD');
-
+    console.log(schedules.value);
     // Filtra los elementos de schedule.value que coincidan con la nueva fecha
     const filteredSchedules = schedules.value.filter((item) => {
         const itemDate = dformat(new Date(item.day), 'YYYY-MM-DD');
@@ -47,18 +53,16 @@ const handleDateChange = (newDate) => {
     });
 
     // Ahora, filteredSchedules contiene los elementos de schedule.value que coinciden con la nueva fecha
-    console.log('Schedules para la fecha seleccionada:', filteredSchedules[0].timeSlot);
     const timeSlotValues = [];
+    console.log(filteredSchedules);
     filteredSchedules[0].timeSlot.forEach((slot) => {
         timeSlotValues.push({
             code: slot.timeSlotId,
-            name: dformat(slot.orderlyTurn, 'HH:MM A')
+            name: dformat(slot.orderlyTurn, 'hh:mm A')
         });
     });
     // Asigna timeSlotValues a timeSlot.value
     timeSlot.value = timeSlotValues;
-
-    console.log(timeSlot.value);
 };
 const searchTimeSlot = (event) => {
     if (timeSlot.value) {
@@ -67,12 +71,10 @@ const searchTimeSlot = (event) => {
             console.log(autoFilteredValue.value);
         } else {
             autoFilteredValue.value = timeSlot.value.filter((timeSlot) => {
-                console.log(timeSlot.value);
                 return timeSlot.name.toLowerCase().startsWith(event.query.toLowerCase());
             });
         }
     } else {
-        console.log('nelll');
         toast.add({ severity: 'warn', summary: 'Alerta', detail: 'Seleccione una fecha de cita Médica', life: 3000 });
     }
 };
@@ -85,10 +87,28 @@ watch(date, (newDate) => {
 
 const loading = ref(false);
 const clickNext = async () => {
+    console.log(date.value);
+    console.log(selectedTimeSlot.value.code);
     loading.value = true;
-
-    setTimeout(() => router.push('/quote/payment'), 1000);
-    setTimeout(() => (loading.value = false), 1000);
+    const payload = {
+        origin: 'web',
+        status: 'pendiente',
+        createAt: new Date(),
+        doctorId: medico.value.doctor_id,
+        userId: dataAuthStore.user.userId,
+        timeSlotId: selectedTimeSlot.value.code,
+        appointmentServices: {
+            create: [
+                {
+                    medicalServiceId: 1
+                }
+            ]
+        }
+    };
+    console.log(payload);
+    await dataAppointmentStore.addappointment(payload);
+    router.push('/quote/payment');
+    loading.value = false;
 };
 
 onMounted(async () => {
@@ -103,7 +123,6 @@ onMounted(async () => {
             return schedule;
         });
     });
-    console.log(medico.value);
 
     // Crea un array de fechas desde today hasta oneWeekLater
     const dateArray = [];

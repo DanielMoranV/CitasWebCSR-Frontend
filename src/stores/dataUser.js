@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
 import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId, updateDoctor, updatePersonalizedPrice } from '../api';
@@ -25,32 +24,28 @@ export const useDataUserStore = defineStore('datauserStore', {
             }
         },
         async getUsers() {
-            if (this.dataUser.length === 0) {
-                this.loadingDataUser = true;
-                try {
-                    const { data } = await fetchUsers();
-                    this.dataUser = data;
-                    return this.dataUser;
-                } catch (error) {
-                    console.log(error);
-                } finally {
-                    this.loadingDataUser = false;
-                }
+            this.loadingDataUser = true;
+            try {
+                const { data } = await fetchUsers();
+                this.dataUser = data;
+                return this.dataUser;
+            } catch (error) {
+                console.log(error);
+            } finally {
+                this.loadingDataUser = false;
             }
         },
         async getUsersDependents(userId) {
-            if (this.dataUser.length === 0) {
-                this.loadingDataUser = true;
-                try {
-                    const { data } = await getDependents(userId);
-                    cache.setItem('dependents', data.dependents);
-                    this.dependents = data.dependents;
-                    return this.dependents;
-                } catch (error) {
-                    console.log(error);
-                } finally {
-                    this.loadingDataUser = false;
-                }
+            this.loadingDataUser = true;
+            try {
+                const { data } = await getDependents(userId);
+                cache.setItem('dependents', data.dependents);
+                this.dependents = data.dependents;
+                return this.dependents;
+            } catch (error) {
+                console.log(error);
+            } finally {
+                this.loadingDataUser = false;
             }
         },
         async addUsersDependents(payload) {
