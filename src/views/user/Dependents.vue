@@ -1,6 +1,6 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onBeforeMount, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
@@ -16,6 +16,7 @@ const dependentDialog = ref(false);
 const deleteDependentDialog = ref(false);
 const deleteDependentsDialog = ref(false);
 const dependent = ref({});
+
 const selectedDependents = ref(null);
 const dt = ref(null);
 const filters = ref({});
@@ -41,6 +42,7 @@ onMounted(async () => {
 
 const openNew = () => {
     dependent.value = {};
+    dependent.value.documentType = 'DNI';
     submitted.value = false;
     dependentDialog.value = true;
 };
@@ -49,12 +51,25 @@ const hideDialog = () => {
     dependentDialog.value = false;
     submitted.value = false;
 };
+const isValidDni = (value) => {
+    if (dependent.value.documentType === 'DNI') {
+        // Para DNI, verificar que solo contiene 8 dígitos de 0-9
+        return /^\d{8}$/.test(value);
+    } else if (dependent.value.documentType === 'CE') {
+        // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
+        return /^\d{9}$/.test(value);
+    } else if (dependent.value.documentType === 'Pasaporte') {
+        // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
+        return /^[A-Za-z0-9]{5,20}$/.test(value);
+    }
+    return true; // Permitir otros tipos de documento sin restricciones
+};
+
 const saveDependent = async () => {
     submitted.value = true;
-
     const { name, surnames, dni, birthDate, sex, dependentId } = dependent.value;
 
-    if (name && name.trim() && surnames && dni && birthDate && sex) {
+    if (name && name.trim() && surnames && dni && birthDate && sex && isValidDni(dependent.value.dni)) {
         const userId = authStore.user.userId;
         dependent.value.userId = userId;
         dependent.value.birthDate = new Date(dparse(birthDate));
@@ -82,7 +97,6 @@ const saveDependent = async () => {
 };
 const editDependent = (editDependent) => {
     dependent.value = { ...editDependent };
-    console.log(dependent);
     dependentDialog.value = true;
 };
 
@@ -220,15 +234,15 @@ const initFilters = () => {
                                 <label for="ce">CE</label>
                             </div>
                             <div class="field-radiobutton col-4">
-                                <RadioButton id="pasaport" name="option" value="passport" v-model="dependent.documentType" />
+                                <RadioButton id="pasaport" name="option" value="Pasaporte" v-model="dependent.documentType" />
                                 <label for="pasaport">Pasaporte</label>
                             </div>
                         </div>
                     </div>
                     <div class="field">
-                        <label for="dni">DNI</label>
+                        <label for="dni">{{ dependent.documentType }}</label>
                         <InputText id="name" v-model.trim="dependent.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !dependent.dni }" />
-                        <small class="p-invalid" v-if="submitted && !dependent.dni">DNI es requerido.</small>
+                        <small class="p-invalid" v-if="(submitted && !dependent.dni) || !isValidDni(dependent.dni)">{{ dependent.documentType }} es requerido o formato inválido</small>
                     </div>
                     <div class="field">
                         <label for="name">Nombre</label>

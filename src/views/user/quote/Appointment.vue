@@ -1,6 +1,7 @@
 <script setup>
 import { useDataDoctorStore } from '../../../stores/dataDoctor';
 import { useAuthStore } from '../../../stores/auth';
+import { useDataUserStore } from '../../../stores/dataUser';
 import { useDataAppointmentStore } from '../../../stores/dataAppointment';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -13,12 +14,16 @@ const toast = useToast();
 const dataDoctorStore = useDataDoctorStore();
 const dataAuthStore = useAuthStore();
 const dataAppointmentStore = useDataAppointmentStore();
+const dataUserStore = useDataUserStore();
 
 const schedules = ref(null);
 const timeSlot = ref(null);
+const patients = ref(null);
 const selectedTimeSlot = ref(null);
+const selectedPatient = ref(null);
 const autoFilteredValue = ref([]);
-const schedule = ref(null);
+const autoFilteredPatientValue = ref([]);
+const dependents = ref(null);
 const availableSchedule = ref([]);
 const disabledDates = ref([]);
 const formattedAvailableSchedule = ref([]);
@@ -54,7 +59,6 @@ const handleDateChange = (newDate) => {
 
     // Ahora, filteredSchedules contiene los elementos de schedule.value que coinciden con la nueva fecha
     const timeSlotValues = [];
-    console.log(filteredSchedules);
     filteredSchedules[0].timeSlot.forEach((slot) => {
         timeSlotValues.push({
             code: slot.timeSlotId,
@@ -78,6 +82,15 @@ const searchTimeSlot = (event) => {
         toast.add({ severity: 'warn', summary: 'Alerta', detail: 'Seleccione una fecha de cita Médica', life: 3000 });
     }
 };
+const searchPatient = (event) => {
+    if (!event.query.trim().length) {
+        autoFilteredPatientValue.value = [...patients.value];
+    } else {
+        autoFilteredPatientValue.value = patients.value.filter((patient) => {
+            return patient.name.toLowerCase().startsWith(event.query.toLowerCase());
+        });
+    }
+};
 
 // Observa el cambio en la variable date
 watch(date, (newDate) => {
@@ -87,6 +100,10 @@ watch(date, (newDate) => {
 
 const loading = ref(false);
 const clickNext = async () => {
+    if (!isValidData()) {
+        toast.add({ severity: 'warn', summary: 'Alerta', detail: 'Datos incompletos', life: 3000 });
+        return;
+    }
     console.log(date.value);
     console.log(selectedTimeSlot.value.code);
     loading.value = true;
@@ -95,7 +112,8 @@ const clickNext = async () => {
         status: 'pendiente',
         createAt: new Date(),
         doctorId: medico.value.doctor_id,
-        userId: dataAuthStore.user.userId,
+        userId: null,
+        dependentId: null,
         timeSlotId: selectedTimeSlot.value.code,
         appointmentServices: {
             create: [
@@ -105,10 +123,16 @@ const clickNext = async () => {
             ]
         }
     };
+    payload[selectedPatient.value.code === dataAuthStore.user.userId ? 'userId' : 'dependentId'] = selectedPatient.value.code;
     console.log(payload);
     await dataAppointmentStore.addappointment(payload);
     router.push('/quote/payment');
     loading.value = false;
+};
+const isValidData = () => {
+    // Lógica de validación aquí
+    // Devuelve true si los datos son válidos, de lo contrario, false.
+    return selectedPatient.value && selectedTimeSlot.value /* Otras condiciones de validación */;
 };
 
 onMounted(async () => {
@@ -134,6 +158,24 @@ onMounted(async () => {
 
     // Filtra las fechas disponibles
     disabledDates.value = dateArray.filter((fecha) => !formattedAvailableSchedule.value.includes(dformat(fecha, 'YYYY-MM-DD')));
+
+    dependents.value = await dataUserStore.getUsersDependents(dataAuthStore.user.user.dni);
+    const patientValues = [];
+    patientValues.push({
+        code: dataAuthStore.user.user.userId,
+        name: dataAuthStore.user.user.name + ' ' + dataAuthStore.user.user.surnames
+    });
+    dependents.value.forEach((patient) => {
+        patientValues.push({
+            code: patient.dependentId,
+            name: patient.name + ' ' + patient.surnames
+        });
+    });
+
+    // Asigna timeSlotValues a timeSlot.value
+    patients.value = patientValues;
+    console.log(patients.value);
+    selectedPatient.value = patientValues[0];
 });
 </script>
 <template>
@@ -147,9 +189,16 @@ onMounted(async () => {
 
         <h6>Detalle de consulta</h6>
         <div class="field grid">
+            <label for="patients" class="col-12 mb-2 md:col-2 md:mb-0">Paciente</label>
+            <div class="col-12 md:col-10">
+                <Toast />
+                <AutoComplete placeholder="Nombre del paciente" id="patients" :dropdown="true" v-model="selectedPatient" :suggestions="autoFilteredPatientValue" @complete="searchPatient($event)" field="name" />
+            </div>
+        </div>
+        <div class="field grid">
             <label for="date" class="col-12 mb-2 md:col-2 md:mb-0">Fecha</label>
             <div class="col-12 md:col-10">
-                <Calendar :showIcon="true" v-model="date" :manualInput="false" :minDate="today" :maxDate="oneWeekLater" :disabledDates="disabledDates">
+                <Calendar placeholder="Días disponibles" :showIcon="true" v-model="date" :manualInput="false" :minDate="today" :maxDate="oneWeekLater" :disabledDates="disabledDates">
                     <template #date="slotProps">
                         <div v-if="formattedAvailableSchedule.includes(formattedDate(slotProps.date))" style="padding: 50%; color: green; font-size: 1.1em; background-color: lightgreen; border-radius: 50%" class="available-date">
                             {{ slotProps.date.day }}
@@ -170,8 +219,8 @@ onMounted(async () => {
             <label for="hour" class="col-12 mb-2 md:col-2 md:mb-0">Precio Consulta</label>
             <div class="col-12 md:col-10"><InputText id="price" type="text" v-model="medico.price" :disabled="true" /></div>
         </div>
+        <Button label="Siguiente" icon="pi pi-arrow-right" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="clickNext"></Button>
     </div>
-    <Button label="Siguiente" icon="pi pi-arrow-right" class="p-button-success col-12 md:col-3 mr-2 mb-2" :loading="loading" @click="clickNext"></Button>
 </template>
 <style>
 .available-date:hover {

@@ -1,12 +1,18 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useDataAppointmentStore } from '../../../stores/dataAppointment';
+import { dformat } from '../../../utils/day';
 
+const dataAppointmentStore = useDataAppointmentStore();
 const router = useRouter();
+
+const appointment = ref(null);
 const displayPaymentMethod = ref(false);
 const displayYape = ref(false);
 const displayCard = ref(false);
 const loading = ref(false);
+const documentType = ref(null);
 
 const close = () => {
     displayPaymentMethod.value = false;
@@ -30,6 +36,15 @@ const payment = () => {
     setTimeout(() => router.push('/quote/confirmation'), 1000);
     setTimeout(() => (loading.value = false), 1000);
 };
+onMounted(async () => {
+    console.log(dataAppointmentStore.appointment.appointmentId);
+    appointment.value = await dataAppointmentStore.getAppointmentId(dataAppointmentStore.appointment.appointmentId);
+    console.log(appointment.value);
+    const patientName = appointment.value.userId ? `${appointment.value.user.name} ${appointment.value.user.surnames}` : `${appointment.value.dependent.name} ${appointment.value.dependent.surnames}`;
+
+    appointment.value.patient = patientName;
+    console.log('paciente', appointment.value);
+});
 </script>
 <template>
     <div class="flex align-items-center py-5 px-3">
@@ -43,23 +58,22 @@ const payment = () => {
                     <div class="field">
                         <label class="mb-3">Tipo de comprobante</label>
                         <div class="formgrid grid">
-                            <div class="field-radiobutton col-4">
+                            <div class="field-radiobutton col-6">
                                 <RadioButton id="boleta" name="option" value="Boleta" v-model="documentType" />
                                 <label for="boleta">Boleta</label>
                             </div>
-                            <div class="field-radiobutton col-4">
+                            <div class="field-radiobutton col-6">
                                 <RadioButton id="factura" name="option" value="Factura" v-model="documentType" />
                                 <label for="factura">Factura</label>
                             </div>
                         </div>
                     </div>
-                    <p class="mt-3 mb-1">Medico :</p>
-                    <p class="mb-1">Especialidad :</p>
-                    <p class="mb-1">Paciente :</p>
-                    <p class="mb-1">Tipo de servicio :</p>
-                    <span>Fecha: 06-09-2023 </span>
-                    <span class="ml-4">Hora: </span>
-                    <p>Total:</p>
+                    <p class="mt-3 mb-1">Medico : {{ appointment ? appointment.doctor.user.name + ' ' + appointment.doctor.user.surnames : 'No disponible' }}</p>
+                    <p class="mb-1">Especialidad : {{ appointment ? appointment.doctor.specialization : 'No disponible' }}</p>
+                    <p class="mb-1">Paciente : {{ appointment ? appointment.patient : 'No disponible' }}</p>
+                    <p class="mb-1">Tipo de servicio : {{ appointment ? appointment.appointmentServices[0].medicalService.name : 'No disponible' }}</p>
+                    <span>Fecha: {{ appointment ? dformat(appointment.timeSlot.orderlyTurn, 'DD MMMM YYYY hh:mm A') : 'No disponible' }} </span>
+                    <p>Total: {{ appointment ? appointment.doctor.personalizedPrices[0].personalizedPrice : 'No disponible' }}</p>
                 </div>
             </div>
         </div>

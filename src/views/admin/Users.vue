@@ -32,6 +32,19 @@ const roleNames = ref({
     1: 'Administrador',
     2: 'Admisionista'
 });
+const isValidDni = (value) => {
+    if (dependent.value.documentType === 'DNI') {
+        // Para DNI, verificar que solo contiene 8 dígitos de 0-9
+        return /^\d{8}$/.test(value);
+    } else if (dependent.value.documentType === 'CE') {
+        // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
+        return /^\d{9}$/.test(value);
+    } else if (dependent.value.documentType === 'Pasaporte') {
+        // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
+        return /^[A-Za-z0-9]{5,20}$/.test(value);
+    }
+    return true; // Permitir otros tipos de documento sin restricciones
+};
 
 onBeforeMount(() => {
     initFilters();
@@ -65,7 +78,7 @@ const openNew = () => {
             birthDate: null,
             civilStatus: null,
             dni: null,
-            documentType: null,
+            documentType: 'DNI',
             email: null,
             name: null,
             phone: null,
@@ -86,7 +99,7 @@ const hideDialog = () => {
 
 const validateRequiredFields = () => {
     const userValue = user.value.user;
-    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex;
+    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && isValidDni(userValue.dni);
 };
 
 const updateUser = async () => {
@@ -335,9 +348,9 @@ const initFilters = () => {
                         </div>
                     </div>
                     <div class="field">
-                        <label for="dni">DNI</label>
+                        <label for="dni">{{ user.user.documentType }}</label>
                         <InputText id="name" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
-                        <small class="p-invalid" v-if="submitted && !user.user.dni">DNI es requerido.</small>
+                        <small class="p-invalid" v-if="(submitted && !user.user.dni) || !isValidDni(user.dni)">{{ user.user.documentType }} es requerido o formato inválido</small>
                     </div>
                     <div class="field">
                         <label for="name">Nombre</label>

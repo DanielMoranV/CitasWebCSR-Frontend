@@ -41,6 +41,19 @@ const roleItems = ref([{ name: 'Médico', code: 3 }]);
 const roleNames = ref({
     3: 'Médico'
 });
+const isValidDni = (value) => {
+    if (user.value.documentType === 'DNI') {
+        // Para DNI, verificar que solo contiene 8 dígitos de 0-9
+        return /^\d{8}$/.test(value);
+    } else if (user.value.documentType === 'CE') {
+        // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
+        return /^\d{9}$/.test(value);
+    } else if (user.value.documentType === 'Pasaporte') {
+        // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
+        return /^[A-Za-z0-9]{5,20}$/.test(value);
+    }
+    return true; // Permitir otros tipos de documento sin restricciones
+};
 
 onBeforeMount(() => {
     initFilters();
@@ -73,7 +86,7 @@ const openNew = () => {
             birthDate: null,
             civilStatus: null,
             dni: null,
-            documentType: null,
+            documentType: 'DNI',
             email: null,
             name: null,
             phone: null,
@@ -109,7 +122,7 @@ const hideDialog = () => {
 
 const validateRequiredFields = () => {
     const userValue = user.value.user;
-    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && user.value.user.Doctor.status;
+    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && user.value.user.Doctor.status && isValidDni(userValue.dni);
 };
 
 const updateUser = async () => {
@@ -143,7 +156,6 @@ const updateUser = async () => {
             ]
         }
     };
-    console.log(payload);
     if (user.value.accessId) {
         const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
         if (userIndex !== -1) {
@@ -393,15 +405,15 @@ const initFilters = () => {
                                 <label for="ce">CE</label>
                             </div>
                             <div class="field-radiobutton col-4">
-                                <RadioButton id="pasaport" name="option" value="passport" v-model="user.user.documentType" />
+                                <RadioButton id="pasaport" name="option" value="Pasaporte" v-model="user.user.documentType" />
                                 <label for="pasaport">Pasaporte</label>
                             </div>
                         </div>
                     </div>
                     <div class="field">
-                        <label for="dni">DNI</label>
+                        <label for="dni">{{ user.documentType }}</label>
                         <InputText id="dni" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
-                        <small class="p-invalid" v-if="submitted && !user.user.dni">DNI es requerido.</small>
+                        <small class="p-invalid" v-if="(submitted && !user.user.dni) || !isValidDni(user.user.dni)">{{ user.documentType }} es requerido o formato inválido</small>
                     </div>
                     <div class="field">
                         <label for="name">Nombre</label>
