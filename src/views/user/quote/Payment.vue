@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router';
 import { useDataAppointmentStore } from '../../../stores/dataAppointment';
 import { dformat } from '../../../utils/day';
 
+const publicKey = import.meta.env.PUBLIC_KEY;
+console.log(publicKey);
 const dataAppointmentStore = useDataAppointmentStore();
 const router = useRouter();
 
@@ -13,6 +15,15 @@ const displayYape = ref(false);
 const displayCard = ref(false);
 const loading = ref(false);
 const documentType = ref(null);
+
+const paymentValues = ref({
+    amount: null,
+    paymentDate: null,
+    appointmentId: null,
+    paymentMethodId: null,
+    VoucherTypeId: null,
+    userId: null
+});
 
 const close = () => {
     displayPaymentMethod.value = false;
@@ -36,6 +47,64 @@ const payment = () => {
     setTimeout(() => router.push('/quote/confirmation'), 1000);
     setTimeout(() => (loading.value = false), 1000);
 };
+const mp = new MercadoPago('TEST-807e4e58-5587-46f6-9bbc-d282fb14ea93', {
+    locale: 'es-PE'
+});
+const bricksBuilder = mp.bricks();
+
+const renderCardPaymentBrick = async (bricksBuilder, paymentValues) => {
+    console.log(paymentValues.value);
+    const settings = {
+        initialization: {
+            amount: paymentValues.value.amount, // Monto a ser pagado
+            payer: paymentValues.value
+        },
+        customization: {
+            visual: {
+                style: {
+                    customVariables: {
+                        theme: 'default' // | 'dark' | 'bootstrap' | 'flat'
+                    }
+                }
+            },
+            paymentMethods: {
+                maxInstallments: 1
+            }
+        },
+        callbacks: {
+            onReady: () => {
+                // Callback llamado cuando Brick esté listo
+                console.log('estoy listo');
+            },
+            onSubmit: (cardFormData) => {
+                // Callback llamado cuando el usuario haga clic en el botón enviar los datos
+                // Ejemplo de envío de los datos recolectados por el Brick a su servidor
+                return new Promise((resolve, reject) => {
+                    fetch('/process_payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(cardFormData)
+                    })
+                        .then((response) => {
+                            // Recibir el resultado del pago
+                            resolve();
+                        })
+                        .catch((error) => {
+                            // Tratar respuesta de error al intentar crear el pago
+                            reject();
+                        });
+                });
+            },
+            onError: (error) => {
+                // Callback llamado para todos los casos de error de Brick
+                console.log(error);
+            }
+        }
+    };
+    window.cardPaymentBrickController = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', settings);
+};
 onMounted(async () => {
     console.log(dataAppointmentStore.appointment.appointmentId);
     appointment.value = await dataAppointmentStore.getAppointmentId(dataAppointmentStore.appointment.appointmentId);
@@ -44,6 +113,15 @@ onMounted(async () => {
 
     appointment.value.patient = patientName;
     console.log('paciente', appointment.value);
+    paymentValues.value = {
+        amount: appointment.value.doctor.personalizedPrices[0].personalizedPrice,
+        paymentDate: new Date(),
+        appointmentId: dataAppointmentStore.appointment.appointmentId,
+        paymentMethodId: 2,
+        VoucherTypeId: documentType.value,
+        userId: appointment.value.user.userId
+    };
+    renderCardPaymentBrick(bricksBuilder, paymentValues);
 });
 </script>
 <template>
@@ -52,18 +130,18 @@ onMounted(async () => {
         <p class="m-0 text-lg">Pago de consultas médicas</p>
     </div>
     <div class="grid justify-content-center">
-        <div class="col-12 md:col-6 lg:col-4 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
+        <div class="col-12 md:col-6 lg:col-5 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
             <div style="height: 250px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))">
                 <div class="p-3 surface-card h-full" style="border-radius: 8px">
                     <div class="field">
                         <label class="mb-3">Tipo de comprobante</label>
                         <div class="formgrid grid">
                             <div class="field-radiobutton col-6">
-                                <RadioButton id="boleta" name="option" value="Boleta" v-model="documentType" />
+                                <RadioButton id="boleta" name="option" value="1" v-model="documentType" />
                                 <label for="boleta">Boleta</label>
                             </div>
                             <div class="field-radiobutton col-6">
-                                <RadioButton id="factura" name="option" value="Factura" v-model="documentType" />
+                                <RadioButton id="factura" name="option" value="2" v-model="documentType" />
                                 <label for="factura">Factura</label>
                             </div>
                         </div>
@@ -77,11 +155,20 @@ onMounted(async () => {
                 </div>
             </div>
         </div>
+        <div class="col-12 md:col-6 lg:col-5 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
+            <div style="padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))">
+                <div class="p-3 surface-card h-full" style="border-radius: 8px">
+                    <div id="cardPaymentBrick_container"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
     <Dialog header="Método de pago" v-model:visible="displayPaymentMethod" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" :modal="true">
-        <p class="line-height-3 m-0">Si el pago se realiza con tarjeta de crédito o débito, por favor ingrese los datos del titular</p>
+        <!-- <p class="line-height-3 m-0">Si el pago se realiza con tarjeta de crédito o débito, por favor ingrese los datos del titular</p>
         <Button label="Tarjeta" class="p-button-raised p-button-success mr-2 mt-3 col-12 md:col-5" @click="openCard" />
-        <Button label="Yape" class="p-button-raised p-button-primary mr-2 col-12 md:col-6" @click="openYape" />
+        <Button label="Yape" class="p-button-raised p-button-primary mr-2 col-12 md:col-6" @click="openYape" /> -->
+        <div id="cardPaymentBrick_container">Holi</div>
     </Dialog>
     <Dialog header="Yape" v-model:visible="displayYape" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" :modal="true">
         <p class="line-height-3 m-0">Paga con tu Código de aprobación</p>

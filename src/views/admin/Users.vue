@@ -33,13 +33,13 @@ const roleNames = ref({
     2: 'Admisionista'
 });
 const isValidDni = (value) => {
-    if (dependent.value.documentType === 'DNI') {
+    if (user.value.documentType === 'DNI') {
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
         return /^\d{8}$/.test(value);
-    } else if (dependent.value.documentType === 'CE') {
+    } else if (user.value.documentType === 'CE') {
         // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
         return /^\d{9}$/.test(value);
-    } else if (dependent.value.documentType === 'Pasaporte') {
+    } else if (user.value.documentType === 'Pasaporte') {
         // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
         return /^[A-Za-z0-9]{5,20}$/.test(value);
     }
@@ -145,6 +145,7 @@ const updateUser = async () => {
 
     userDialog.value = false;
     user.value = {};
+    submitted.value = false;
 };
 
 const saveUser = async () => {
@@ -342,7 +343,7 @@ const initFilters = () => {
                                 <label for="ce">CE</label>
                             </div>
                             <div class="field-radiobutton col-4">
-                                <RadioButton id="pasaport" name="option" value="passport" v-model="user.user.documentType" />
+                                <RadioButton id="pasaport" name="option" value="Pasaporte" v-model="user.user.documentType" />
                                 <label for="pasaport">Pasaporte</label>
                             </div>
                         </div>
