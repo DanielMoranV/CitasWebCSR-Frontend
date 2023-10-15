@@ -241,7 +241,7 @@ const initFilters = () => {
                     </div>
                     <div class="field">
                         <label for="dni">{{ dependent.documentType }}</label>
-                        <InputText id="name" v-model.trim="dependent.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !dependent.dni }" />
+                        <InputText id="name" v-model.trim="dependent.dni" required="true" autofocus :class="{ 'p-invalid': (submitted && !dependent.dni) || !isValidDni(dependent.dni) }" />
                         <small class="p-invalid" v-if="(submitted && !dependent.dni) || !isValidDni(dependent.dni)">{{ dependent.documentType }} es requerido o formato inválido</small>
                     </div>
                     <div class="field">

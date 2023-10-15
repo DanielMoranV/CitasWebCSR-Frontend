@@ -42,13 +42,13 @@ const roleNames = ref({
     3: 'Médico'
 });
 const isValidDni = (value) => {
-    if (user.value.documentType === 'DNI') {
+    if (user.value.user.documentType === 'DNI') {
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
         return /^\d{8}$/.test(value);
-    } else if (user.value.documentType === 'CE') {
+    } else if (user.value.user.documentType === 'CE') {
         // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
         return /^\d{9}$/.test(value);
-    } else if (user.value.documentType === 'Pasaporte') {
+    } else if (user.value.user.documentType === 'Pasaporte') {
         // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
         return /^[A-Za-z0-9]{5,20}$/.test(value);
     }
@@ -412,8 +412,8 @@ const initFilters = () => {
                     </div>
                     <div class="field">
                         <label for="dni">{{ user.documentType }}</label>
-                        <InputText id="dni" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': submitted && !user.user.dni }" />
-                        <small class="p-invalid" v-if="(submitted && !user.user.dni) || !isValidDni(user.user.dni)">{{ user.documentType }} es requerido o formato inválido</small>
+                        <InputText id="dni" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': (submitted && !user.user.dni) || !isValidDni(user.user.dni) }" />
+                        <small class="p-invalid" v-if="(submitted && !user.user.dni) || !isValidDni(user.user.dni)">{{ user.user.documentType }} es requerido o formato inválido</small>
                     </div>
                     <div class="field">
                         <label for="name">Nombre</label>

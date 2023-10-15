@@ -1,13 +1,14 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createappointment, getAppointmentId } from '../api';
+import { createPayment, createappointment, getAppointmentId } from '../api';
 
 export const useDataAppointmentStore = defineStore({
     id: 'appointment',
     state: () => ({
         appointments: cache.getItem('appointments'),
         appointment: cache.getItem('appointment'),
+        payment: cache.getItem('payment'),
         msg: {},
         loadingUser: false
     }),
@@ -35,6 +36,16 @@ export const useDataAppointmentStore = defineStore({
                 const { data } = await getAppointmentId(appointmentId);
                 cache.setItem('appointment', data);
                 this.appointment = data;
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async addPayment(payload) {
+            try {
+                const data = await createPayment(payload);
+                cache.setItem('payload', data);
+                this.payment = data;
                 return data;
             } catch (error) {
                 console.log(error);

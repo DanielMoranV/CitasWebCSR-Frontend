@@ -76,26 +76,29 @@ const renderCardPaymentBrick = async (bricksBuilder, paymentValues) => {
                 // Callback llamado cuando Brick esté listo
                 console.log('estoy listo');
             },
-            onSubmit: (cardFormData) => {
+            onSubmit: async (cardFormData) => {
                 // Callback llamado cuando el usuario haga clic en el botón enviar los datos
                 // Ejemplo de envío de los datos recolectados por el Brick a su servidor
-                return new Promise((resolve, reject) => {
-                    fetch('/process_payment', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(cardFormData)
-                    })
-                        .then((response) => {
-                            // Recibir el resultado del pago
-                            resolve();
-                        })
-                        .catch((error) => {
-                            // Tratar respuesta de error al intentar crear el pago
-                            reject();
-                        });
-                });
+                // return new Promise((resolve, reject) => {
+                //     fetch('/process_payment', {
+                //         method: 'POST',
+                //         headers: {
+                //             'Content-Type': 'application/json'
+                //         },
+                //         body: JSON.stringify(cardFormData)
+                //     })
+                //         .then((response) => {
+                //             console.log(response);
+                //             // Recibir el resultado del pago
+                //             resolve();
+                //         })
+                //         .catch((error) => {
+                //             console.log(error);
+                //             // Tratar respuesta de error al intentar crear el pago
+                //             reject();
+                //         });
+                // });
+                await dataAppointmentStore.addPayment(cardFormData);
             },
             onError: (error) => {
                 // Callback llamado para todos los casos de error de Brick

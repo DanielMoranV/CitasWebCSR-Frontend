@@ -9,6 +9,7 @@ const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 const dataUserStore = useDataUserStore();
+const submitted = ref(false);
 // Observa cambios en la sesión del usuario
 watch(
     () => authStore.sessionUser,
@@ -76,9 +77,24 @@ const validateAge = () => {
 
     return true; // Es mayor de edad
 };
+const isValidDni = (value) => {
+    if (dataUser.documentType === 'DNI') {
+        // Para DNI, verificar que solo contiene 8 dígitos de 0-9
+        return /^\d{8}$/.test(value);
+    } else if (dataUser.documentType === 'CE') {
+        // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
+        return /^\d{9}$/.test(value);
+    } else if (dataUser.documentType === 'Pasaporte') {
+        // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
+        return /^[A-Za-z0-9]{5,20}$/.test(value);
+    }
+    return true; // Permitir otros tipos de documento sin restricciones
+};
 
 const signinUser = async () => {
-    if (!validateRequiredFields() || !validateAge()) {
+    submitted.value = true;
+    if (!validateRequiredFields() || !validateAge() || !isValidDni(dataUser.dni)) {
+        //submitted.value = false;
         return; // Detener la función si no se cumplen las validaciones
     }
 
@@ -139,15 +155,16 @@ onMounted(() => {
                     </div>
                     <div class="col-4 md:col-4">
                         <div class="field-radiobutton mb-0">
-                            <RadioButton id="pasaport" name="option" value="passport" v-model="dataUser.documentType" />
+                            <RadioButton id="pasaport" name="option" value="Pasaporte" v-model="dataUser.documentType" />
                             <label for="pasaport">Pasaporte</label>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="field col-12 md:col-6">
-                <label for="document">Número de documento</label>
-                <InputText id="document" type="text" v-model="dataUser.dni" />
+                <label for="document">{{ dataUser.documentType }}</label>
+                <InputText id="document" type="text" v-model="dataUser.dni" :class="{ 'p-invalid': (submitted && !dataUser.dni) || !isValidDni(dataUser.dni) }" />
+                <small class="p-invalid" v-if="(submitted && !dataUser.dni) || !isValidDni(dataUser.dni)">{{ dataUser.documentType }} es requerido o formato inválido</small>
             </div>
             <div class="field col-12 md:col-6">
                 <label for="name">Nombre</label>
