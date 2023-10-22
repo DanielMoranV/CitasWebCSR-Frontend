@@ -60,13 +60,10 @@ onMounted(async () => {
         buttonPaymentDisabled.value = false;
     };
     document.body.appendChild(script);
-    console.log(dataAppointmentStore.appointment.user);
     appointment.value = await dataAppointmentStore.getAppointmentId(dataAppointmentStore.appointment.appointmentId);
-    console.log(appointment.value);
     const patientName = appointment.value.userId ? `${appointment.value.user.name} ${appointment.value.user.surnames}` : `${appointment.value.dependent.name} ${appointment.value.dependent.surnames}`;
 
     appointment.value.patient = patientName;
-    console.log('paciente', appointment.value);
     paymentValues.value = {
         amount: appointment.value.doctor.personalizedPrices[0].personalizedPrice,
         paymentDate: new Date(),
@@ -79,7 +76,6 @@ onMounted(async () => {
 
 window.addEventListener('culqiTokenCreated', async (event) => {
     culqiToken.value = event.detail;
-    console.log(culqiToken.value);
     culqiToken.value.metadata.appointmentId = dataAppointmentStore.appointment.appointmentId;
     culqiToken.value.metadata.paymentMethodId = 2;
     culqiToken.value.metadata.VoucherTypeId = 5;
@@ -94,11 +90,12 @@ window.addEventListener('culqiTokenCreated', async (event) => {
     // En este punto, culqiToken contiene el token y puedes manejarlo
     const response = await dataAppointmentStore.addPayment(culqiToken.value);
     if (response.message) {
-        toast.add({ severity: 'error', summary: 'Error', detail: response.message, life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: response.message, life: 4000 });
         Culqi.close();
     } else {
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Pago realizado correctamente', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Pago realizado correctamente', life: 4000 });
         Culqi.close();
+        setTimeout(() => router.push('/quote/confirmation'), 1000);
     }
 });
 </script>
