@@ -1,4 +1,4 @@
-import { createApp, markRaw } from 'vue';
+import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import { createPinia } from 'pinia';
@@ -103,6 +103,7 @@ import VirtualScroller from 'primevue/virtualscroller';
 
 import CodeHighlight from '@/components/CodeHighlight.vue';
 import BlockViewer from '@/components/BlockViewer.vue';
+import './culqi.js';
 
 import '@/assets/styles.scss';
 const pinia = createPinia();

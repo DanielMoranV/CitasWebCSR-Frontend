@@ -17,7 +17,30 @@
 
     <body>
         <div id="app"></div>
+        <script>
+            function culqi() {
+                if (Culqi.token) {
+                    const token = Culqi.token.id;
+                    console.log('Se ha creado un Token: ', token);
+
+                    // En este punto, puedes manejar el token según tus necesidades
+                    // Por ejemplo, puedes realizar una solicitud Ajax para enviar el token al servidor
+                    // Emitir un evento personalizado global en Vue
+                    const event = new CustomEvent('culqiTokenCreated', { detail: Culqi.token });
+                    window.dispatchEvent(event);
+                } else if (Culqi.order) {
+                    const order = Culqi.order;
+                    console.log('Se ha creado el objeto Order: ', order);
+                } else {
+                    console.error('Error: ', Culqi.error);
+                }
+            }
+        </script>
         <script src="https://sdk.mercadopago.com/js/v2"></script>
+        <!-- <script src="https://checkout.culqi.com/js/v4"></script>
+        <script>
+            Culqi.publicKey = 'pk_test_73e0f77c30643c37';
+        </script> -->
         <script type="module" src="/src/main.js"></script>
     </body>
 </html>

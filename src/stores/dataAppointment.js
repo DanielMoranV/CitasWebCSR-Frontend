@@ -43,12 +43,13 @@ export const useDataAppointmentStore = defineStore({
         },
         async addPayment(payload) {
             try {
-                const data = await createPayment(payload);
+                const { data } = await createPayment(payload);
                 cache.setItem('payload', data);
                 this.payment = data;
                 return data;
             } catch (error) {
                 console.log(error);
+                return error;
             }
         }
 

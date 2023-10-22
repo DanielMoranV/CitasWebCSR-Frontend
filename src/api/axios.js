@@ -7,7 +7,7 @@ const api_url = import.meta.env.VITE_API_URL;
 
 const instance = axios.create({
     baseURL: api_url,
-    timeout: 5000
+    timeout: 10000
 });
 
 instance.interceptors.request.use(
@@ -30,7 +30,7 @@ instance.interceptors.response.use(
     },
     function (error) {
         let errData = {
-            message: error.response.data.message,
+            message: error.response.data.message || error.message,
             status_code: 'offline',
             success: false,
             details: null,
