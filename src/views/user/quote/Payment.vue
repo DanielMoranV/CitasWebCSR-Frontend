@@ -61,7 +61,7 @@ onMounted(async () => {
     };
     document.body.appendChild(script);
     appointment.value = await dataAppointmentStore.getAppointmentId(dataAppointmentStore.appointment.appointmentId);
-    const patientName = appointment.value.userId ? `${appointment.value.user.name} ${appointment.value.user.surnames}` : `${appointment.value.dependent.name} ${appointment.value.dependent.surnames}`;
+    const patientName = appointment.value.dependentId ? `${appointment.value.dependent.name} ${appointment.value.dependent.surnames}` : `${appointment.value.user.name} ${appointment.value.user.surnames}`;
 
     appointment.value.patient = patientName;
     paymentValues.value = {
@@ -86,6 +86,13 @@ window.addEventListener('culqiTokenCreated', async (event) => {
     culqiToken.value.client.phone = authStore.user.user.phone;
     culqiToken.value.client.name = authStore.user.user.name;
     culqiToken.value.client.surnames = authStore.user.user.surnames;
+    culqiToken.value.dataPayment = {
+        nameDoctor: appointment.value.doctor.user.name + ' ' + appointment.value.doctor.user.surnames,
+        specialty: appointment.value.doctor.specialization,
+        patient: appointment.value.patient,
+        date: dformat(appointment.value.timeSlot.orderlyTurn, 'DD MMMM YYYY hh:mm A'),
+        price: appointment.value.doctor.personalizedPrices[0].personalizedPrice
+    };
 
     // En este punto, culqiToken contiene el token y puedes manejarlo
     const response = await dataAppointmentStore.addPayment(culqiToken.value);

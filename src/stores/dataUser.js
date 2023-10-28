@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId, updateDoctor, updatePersonalizedPrice } from '../api';
+import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId, updateDoctor, updatePersonalizedPrice, createAccessUser } from '../api';
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
@@ -79,6 +79,7 @@ export const useDataUserStore = defineStore('datauserStore', {
         async addUsers(payload) {
             try {
                 const { data } = await createUser(payload);
+                await createAccessUser(payload.dni, { password: payload.dni, roleId: 4 });
                 this.dataUser = data;
                 return data;
             } catch (error) {

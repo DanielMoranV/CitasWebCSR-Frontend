@@ -77,6 +77,13 @@ const validateAge = () => {
 
     return true; // Es mayor de edad
 };
+const isValidPhone = (value) => {
+    // Utiliza una expresión regular para validar el número de teléfono.
+    // Puedes personalizar esta expresión regular según tus necesidades.
+    const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
+
+    return phonePattern.test(value);
+};
 const isValidDni = (value) => {
     if (dataUser.documentType === 'DNI') {
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
@@ -93,7 +100,7 @@ const isValidDni = (value) => {
 
 const signinUser = async () => {
     submitted.value = true;
-    if (!validateRequiredFields() || !validateAge() || !isValidDni(dataUser.dni)) {
+    if (!validateRequiredFields() || !validateAge() || !isValidDni(dataUser.dni) || !isValidPhone(dataUser.phone)) {
         //submitted.value = false;
         return; // Detener la función si no se cumplen las validaciones
     }
@@ -196,7 +203,8 @@ onMounted(() => {
             </div>
             <div class="field col-12 md:col-3">
                 <label for="phone">Teléfono</label>
-                <InputText id="phone" type="text" v-model="dataUser.phone" />
+                <InputText id="phone" v-model.trim="dataUser.phone" :class="{ 'p-invalid': (submitted && !dataUser.phone) || !isValidPhone(dataUser.phone) }" />
+                <small class="p-invalid" v-if="(submitted && !dataUser.phone) || !isValidPhone(dataUser.phone)"> Teléfono es requerido o formato inválido</small>
             </div>
         </div>
         <Toast />

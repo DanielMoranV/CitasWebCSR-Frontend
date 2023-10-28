@@ -28,7 +28,6 @@ const appointment = async (cmp) => {
 onMounted(async () => {
     const data = await dataDoctorStore.getInfoDoctors();
     infoDoctors.value = data;
-    console.log(infoDoctors.value);
 });
 </script>
 

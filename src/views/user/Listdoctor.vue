@@ -43,7 +43,6 @@ onMounted(async () => {
             return user;
         });
     });
-    console.log(users.value);
 });
 
 const initFilters = () => {
@@ -97,12 +96,6 @@ const initFilters = () => {
                         <template #body="slotProps">
                             <span class="p-column-title">Apellidos</span>
                             {{ slotProps.data.user.surnames }}
-                        </template>
-                    </Column>
-                    <Column field="roleName" header="Rol" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Rol</span>
-                            {{ slotProps.data.roleName }}
                         </template>
                     </Column>
                     <Column field="user.Doctor.specialization" header="Especialidad" :sortable="true" headerStyle="width:14%; min-width:10rem;">

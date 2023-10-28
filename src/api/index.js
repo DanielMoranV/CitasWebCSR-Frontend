@@ -42,6 +42,7 @@ export const deleteDependent = (dependentId) => axios.delete(`/users/dependents/
 // Citas Medicas
 export const createappointment = (payload) => axios.post('/appointment', payload);
 export const getAppointmentId = (appointmentId) => axios.get(`/appointment/${appointmentId}`);
+export const getAppointmentUserId = (userId) => axios.get(`/appointment/user/${userId}`);
 
 // Pagos
 export const createPayment = (payload) => axios.post('/payment', payload);

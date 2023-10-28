@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 //import { useResponse } from '../composables/useResponse';
 
-const api_url = import.meta.env.VITE_API_URL;
+const api_url = 'https://csrapi.serveo.net/api/v1';
 
 const instance = axios.create({
     baseURL: api_url,

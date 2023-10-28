@@ -32,6 +32,13 @@ const roleNames = ref({
     1: 'Administrador',
     2: 'Admisionista'
 });
+const isValidPhone = (value) => {
+    // Utiliza una expresión regular para validar el número de teléfono.
+    // Puedes personalizar esta expresión regular según tus necesidades.
+    const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
+
+    return phonePattern.test(value);
+};
 const isValidDni = (value) => {
     if (user.value.user.documentType === 'DNI') {
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
@@ -99,7 +106,7 @@ const hideDialog = () => {
 
 const validateRequiredFields = () => {
     const userValue = user.value.user;
-    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && isValidDni(userValue.dni);
+    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && isValidDni(userValue.dni) && isValidPhone(userValue.phone);
 };
 
 const updateUser = async () => {
@@ -372,7 +379,8 @@ const initFilters = () => {
                         </div>
                         <div class="field col">
                             <label for="phone">Teléfono</label>
-                            <InputText id="name" v-model.trim="user.user.phone" />
+                            <InputText id="phone" v-model.trim="user.user.phone" :class="{ 'p-invalid': (submitted && !user.user.phone) || !isValidPhone(user.user.phone) }" />
+                            <small class="p-invalid" v-if="(submitted && !user.user.phone) || !isValidPhone(user.user.phone)"> Teléfono es requerido o formato inválido</small>
                         </div>
                     </div>
                     <div class="formgrid grid">

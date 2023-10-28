@@ -36,7 +36,7 @@ const nextSchedule = (dataDoctor) => {
 
     router.push('/timetable');
 };
-const roleItems = ref([{ name: 'Médico', code: 3 }]);
+//const roleItems = ref([{ name: 'Médico', code: 3 }]);
 
 const roleNames = ref({
     3: 'Médico'
@@ -53,6 +53,14 @@ const isValidDni = (value) => {
         return /^[A-Za-z0-9]{5,20}$/.test(value);
     }
     return true; // Permitir otros tipos de documento sin restricciones
+};
+
+const isValidPhone = (value) => {
+    // Utiliza una expresión regular para validar el número de teléfono.
+    // Puedes personalizar esta expresión regular según tus necesidades.
+    const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
+
+    return phonePattern.test(value);
 };
 
 onBeforeMount(() => {
@@ -122,7 +130,7 @@ const hideDialog = () => {
 
 const validateRequiredFields = () => {
     const userValue = user.value.user;
-    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && user.value.user.Doctor.status && isValidDni(userValue.dni);
+    return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && user.value.user.Doctor.status && isValidDni(userValue.dni), isValidPhone(userValue.phone);
 };
 
 const updateUser = async () => {
@@ -434,7 +442,8 @@ const initFilters = () => {
                         </div>
                         <div class="field col">
                             <label for="phone">Teléfono</label>
-                            <InputText id="phone" v-model.trim="user.user.phone" />
+                            <InputText id="phone" v-model.trim="user.user.phone" :class="{ 'p-invalid': (submitted && !user.user.phone) || !isValidPhone(user.user.phone) }" />
+                            <small class="p-invalid" v-if="(submitted && !user.user.phone) || !isValidPhone(user.user.phone)"> Teléfono es requerido o formato inválido</small>
                         </div>
                     </div>
                     <div class="formgrid grid">

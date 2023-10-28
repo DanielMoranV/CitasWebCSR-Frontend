@@ -50,7 +50,6 @@ const formattedDate = computed(() => {
 const handleDateChange = (newDate) => {
     // Realiza alguna acción en respuesta al cambio de fecha
     const formattedNewDate = dformat(newDate, 'YYYY-MM-DD');
-    console.log(schedules.value);
     // Filtra los elementos de schedule.value que coincidan con la nueva fecha
     const filteredSchedules = schedules.value.filter((item) => {
         const itemDate = dformat(new Date(item.day), 'YYYY-MM-DD');
@@ -72,7 +71,6 @@ const searchTimeSlot = (event) => {
     if (timeSlot.value) {
         if (!event.query.trim().length) {
             autoFilteredValue.value = [...timeSlot.value];
-            console.log(autoFilteredValue.value);
         } else {
             autoFilteredValue.value = timeSlot.value.filter((timeSlot) => {
                 return timeSlot.name.toLowerCase().startsWith(event.query.toLowerCase());
@@ -104,15 +102,13 @@ const clickNext = async () => {
         toast.add({ severity: 'warn', summary: 'Alerta', detail: 'Datos incompletos', life: 3000 });
         return;
     }
-    console.log(date.value);
-    console.log(selectedTimeSlot.value.code);
     loading.value = true;
     const payload = {
         origin: 'web',
         status: 'pendiente',
         createAt: new Date(),
         doctorId: medico.value.doctor_id,
-        userId: null,
+        userId: dataAuthStore.user.userId,
         dependentId: null,
         timeSlotId: selectedTimeSlot.value.code,
         appointmentServices: {
@@ -124,7 +120,6 @@ const clickNext = async () => {
         }
     };
     payload[selectedPatient.value.code === dataAuthStore.user.userId ? 'userId' : 'dependentId'] = selectedPatient.value.code;
-    console.log(payload);
     await dataAppointmentStore.addappointment(payload);
     router.push('/quote/payment');
     loading.value = false;
@@ -134,7 +129,7 @@ const isValidData = () => {
     // Devuelve true si los datos son válidos, de lo contrario, false.
     return selectedPatient.value && selectedTimeSlot.value /* Otras condiciones de validación */;
 };
-
+const autoCompletePatients = ref(true);
 onMounted(async () => {
     medico.value = dataDoctorStore.doctor[0];
     await dataDoctorStore.getDoctorSchedule(medico.value.doctor_id).then((data) => {
@@ -173,9 +168,11 @@ onMounted(async () => {
     });
 
     // Asigna timeSlotValues a timeSlot.value
-    patients.value = patientValues;
-    console.log(patients.value);
-    selectedPatient.value = patientValues[0];
+    if (patientValues) {
+        patients.value = patientValues;
+        selectedPatient.value = patientValues[0];
+        autoCompletePatients.value = false;
+    }
 });
 </script>
 <template>
@@ -192,7 +189,7 @@ onMounted(async () => {
             <label for="patients" class="col-12 mb-2 md:col-2 md:mb-0">Paciente</label>
             <div class="col-12 md:col-10">
                 <Toast />
-                <AutoComplete placeholder="Nombre del paciente" id="patients" :dropdown="true" v-model="selectedPatient" :suggestions="autoFilteredPatientValue" @complete="searchPatient($event)" field="name" />
+                <AutoComplete placeholder="Nombre del paciente" id="patients" :dropdown="true" v-model="selectedPatient" :suggestions="autoFilteredPatientValue" @complete="searchPatient($event)" field="name" :disabled="autoCompletePatients" />
             </div>
         </div>
         <div class="field grid">
