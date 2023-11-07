@@ -3,16 +3,22 @@ import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDataAppointmentStore } from '../../stores/dataAppointment';
+import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useAuthStore } from '../../stores/auth';
 import { dformat } from '../../utils/day';
 
 const router = useRouter();
 const dataAuthStore = useAuthStore();
+const dataDoctorStore = useDataDoctorStore();
 const dataAppointment = useDataAppointmentStore();
+const listDoctors = ref([]);
 const appointmentLists = ref([]);
+const appointment = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const loading = ref(null);
+const displayScheduleAppointment = ref(false);
+const autoCompletePatients = ref(true);
 
 onBeforeMount(() => {
     initFilters();
@@ -24,16 +30,23 @@ const openNew = () => {
     router.push('/listdoctor');
 };
 onMounted(async () => {
+    await dataDoctorStore.getDoctors().then((data) => {
+        listDoctors.value = data.map((user) => {
+            user.name = `${user.user.surnames} ${user.user.name}`;
+            return user;
+        });
+    });
     await dataAppointment.getAppointment().then((res) => (appointmentLists.value = res));
-    // console.log(appointmentLists.value);
     appointmentLists.value.forEach((appointment) => {
-        console.log(appointment);
-        appointment.timeSlot.orderlyTurn = new Date(appointment.timeSlot.orderlyTurn);
-        appointment.nameDoctor = `${appointment.doctor.user.surnames} ${appointment.doctor.user.name}`;
-        if (appointment.dependent) {
-            appointment.patient = `${appointment.dependent.name} ${appointment.dependent.surnames}`;
-        } else {
-            appointment.patient = `${appointment.user.name} ${appointment.user.surnames}`;
+        appointment.orderlyTurn = new Date(appointment.orderlyTurn);
+        appointment.specialization = appointment.Schedule.doctor.specialization;
+        appointment.nameDoctor = `${appointment.Schedule.doctor.user.surnames} ${appointment.Schedule.doctor.user.name}`;
+        if (appointment.Appointment[0]) {
+            if (appointment.Appointment[0].dependent) {
+                appointment.patient = `${appointment.Appointment[0].dependent.name} ${appointment.Appointment[0].dependent.surnames}`;
+            } else {
+                appointment.patient = `${appointment.Appointment[0].user.name} ${appointment.Appointment[0].user.surnames}`;
+            }
         }
     });
     loading.value = false;
@@ -41,9 +54,14 @@ onMounted(async () => {
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        nameDoctor: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-        'timeSlot.orderlyTurn': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] }
+        nameDoctor: { value: null, matchMode: FilterMatchMode.IN },
+        orderlyTurn: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] }
     };
+};
+const scheduleAppointment = (data) => {
+    console.log(data);
+    appointment.value = data;
+    displayScheduleAppointment.value = true;
 };
 </script>
 
@@ -67,7 +85,7 @@ const initFilters = () => {
                 <DataTable
                     ref="dt"
                     :value="appointmentLists"
-                    dataKey="appointmentId"
+                    dataKey="timeSlotId"
                     :paginator="true"
                     :rows="10"
                     :rowHover="true"
@@ -78,6 +96,7 @@ const initFilters = () => {
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando del  {first} al {last} de {totalRecords} Atenciones"
+                    :globalFilterFields="['nTurn', 'patient', 'status', 'nameDoctor', 'status', 'specialization', 'orderlyTurn']"
                     responsiveLayout="scroll"
                 >
                     <template #header>
@@ -91,10 +110,10 @@ const initFilters = () => {
                     </template>
                     <template #empty>No se encontraron citas médicas </template>
                     <template #loading> Cargando datos. Espere por favor. </template>
-                    <Column field="timeSlot.nTurn" header="Nº Turno" :sortable="true" headerStyle="width:10%; min-width:2rem;">
+                    <Column field="nTurn" header="Nº Turno" :sortable="true" headerStyle="width:10%; min-width:2rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Nº Turno</span>
-                            {{ slotProps.data.timeSlot.nTurn }}
+                            {{ slotProps.data.nTurn }}
                         </template>
                     </Column>
                     <Column field="patient" header="Paciente" :sortable="true" headerStyle="width:14%; min-width:10rem;">
@@ -106,36 +125,43 @@ const initFilters = () => {
                     <Column field="status" header="Estado" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Estado</span>
-                            <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status }}</span>
+                            <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status || 'Disponible' }}</span>
                         </template>
                     </Column>
-                    <Column field="nameDoctor" header="Médico" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="nameDoctor" header="Médico" :sortable="true" :showFilterMatchModes="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Médico</span>
                             {{ slotProps.data.nameDoctor }}
                         </template>
                         <template #filter="{ filterModel }">
-                            <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Buscar Por Médico" />
+                            <MultiSelect v-model="filterModel.value" :options="listDoctors" optionLabel="name" optionValue="name" placeholder="Buscar Por Médico" class="p-column-filter">
+                                <template #option="slotProps">
+                                    <div class="p-multiselect-representative-option">
+                                        <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ slotProps.option.name }}</span>
+                                    </div>
+                                </template>
+                            </MultiSelect>
                         </template>
                     </Column>
-                    <Column field="doctor.specialization" header="Especialidad" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="specialization" header="Especialidad" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Especialidad</span>
-                            {{ slotProps.data.doctor.specialization }}
+                            {{ slotProps.data.specialization }}
                         </template>
                     </Column>
-                    <Column field="timeSlot.orderlyTurn" header="Fecha Consulta" :sortable="true" headerStyle="width:15%; min-width:10rem;">
+                    <Column field="orderlyTurn" header="Fecha Consulta" :showFilterMatchModes="false" :sortable="true" headerStyle="width:15%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Fecha Consulta</span>
-                            {{ dformat(slotProps.data.timeSlot.orderlyTurn, 'DD MMMM YYYY hh:mm a') }}
+                            {{ dformat(slotProps.data.orderlyTurn, 'DD MMMM YYYY hh:mm a') }}
                         </template>
                         <template #filter="{ filterModel }">
                             <Calendar v-model="filterModel.value" dateFormat="dd/mm/yy" placeholder="dd/mm/yyyy" />
                         </template>
                     </Column>
-                    <Column headerStyle="min-width:10rem;" header="Acciones">
+                    <Column headerStyle="width:10%; min-width:5rem;" header="Acciones">
                         <template #body="slotProps">
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDelete(slotProps.data)" />
+                            <!-- <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2 mr-2" @click="confirmDelete(slotProps.data)" /> -->
+                            <Button icon="pi pi-calendar-plus" class="p-button-rounded p-button-success mt-2" @click="scheduleAppointment(slotProps.data)" />
                         </template>
                     </Column>
                     <!-- 
@@ -165,7 +191,7 @@ const initFilters = () => {
                         </template>
                     </Column> -->
                 </DataTable>
-                <Dialog v-model:visible="deleteDataTicketDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                <!-- <Dialog v-model:visible="deleteDataTicketDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="dataTicket"
@@ -177,9 +203,9 @@ const initFilters = () => {
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteDataTicketDialog = false" />
                         <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteDataTicket" />
                     </template>
-                </Dialog>
+                </Dialog> -->
 
-                <Dialog v-model:visible="deleteDataTicketsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                <!-- <Dialog v-model:visible="deleteDataTicketsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="dataTicket">Are you sure you want to delete the selected Tickets?</span>
@@ -188,6 +214,19 @@ const initFilters = () => {
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteDataTicketsDialog = false" />
                         <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedDataTickets" />
                     </template>
+                </Dialog> -->
+                <Dialog v-model:visible="displayScheduleAppointment" :style="{ width: '450px' }" header="Agendar Cita Médica" :modal="true" class="grid p-fluid">
+                    <p class="mb-1">Medico : {{ appointment ? appointment.nameDoctor : 'No disponible' }}</p>
+                    <p class="mb-1">Especialidad : {{ appointment ? appointment.specialization : 'No disponible' }}</p>
+                    <span>Fecha: {{ appointment ? dformat(appointment.orderlyTurn, 'DD MMMM YYYY hh:mm A') : 'No disponible' }} </span>
+                    <div class="field col-12 md:col-4 mt-4">
+                        <span class="p-float-label">
+                            <AutoComplete id="patients" :dropdown="true" v-model="selectedPatient" :suggestions="autoFilteredPatientValue" @complete="searchPatient($event)" field="name" :disabled="autoCompletePatients" />
+                            <label for="autocomplete">Paciente</label>
+                        </span>
+                    </div>
+
+                    <Button label="Método de pago" icon="pi pi-money-bill" class="p-button-success col-12 mt-3" :disabled="buttonPaymentDisabled" :loading="loading" @click="openPaymentMethod"></Button>
                 </Dialog>
             </div>
         </div>
