@@ -12,7 +12,6 @@ export const updateAccessId = (accessId, payload) => axios.put(`/access/accessId
 export const fetchUsers = () => axios.get('/users');
 export const updateUser = (dni, payload) => axios.put(`/users/${dni}`, payload);
 export const createUser = (payload) => axios.post('/users', payload);
-export const createPatients = (payload) => axios.post('/users/patients', payload);
 export const getUser = (dni) => axios.get(`/users/${dni}`);
 export const deleteUser = (dni) => axios.delete(`/users/${dni}`);
 export const currentUser = () => axios.get('/users/currentuser');
@@ -39,11 +38,19 @@ export const createDependents = (payload) => axios.post('/users/dependents', pay
 export const updateDependent = (dependentId, payload) => axios.put(`/users/dependents/${dependentId}`, payload);
 export const deleteDependent = (dependentId) => axios.delete(`/users/dependents/${dependentId}`);
 
+// PACIENTES
+export const createPatients = (payload) => axios.post('/patients', payload);
+export const getPatients = () => axios.get(`/patients`);
+
 // Citas Medicas
 export const createappointment = (payload) => axios.post('/appointment', payload);
 export const getAppointmentId = (appointmentId) => axios.get(`/appointment/${appointmentId}`);
 export const getAppointmentUserId = (userId) => axios.get(`/appointment/user/${userId}`);
 export const getAppointment = () => axios.get(`/appointment`);
+export const deleteAppointment = (appointmentId) => axios.delete(`/appointment/${appointmentId}`);
 
 // Pagos
 export const createPayment = (payload) => axios.post('/payment', payload);
+
+// Qr Whastapp
+export const getQrWp = () => axios.get('imgqrwp/urlqr/qr.svg');

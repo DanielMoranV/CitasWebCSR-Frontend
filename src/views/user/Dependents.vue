@@ -85,10 +85,15 @@ const saveDependent = async () => {
             }
         } else {
             const dataDependent = await dataUserStore.addUsersDependents(dependent.value);
-            dependent.value.dependentId = dataDependent.dependentId;
-            dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
-            dependents.value.push(dependent.value);
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
+            console.log(dataDependent);
+            if (dataDependent.dependentId) {
+                dependent.value.dependentId = dataDependent.dependentId;
+                dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
+                dependents.value.push(dependent.value);
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dependiente Registrado', life: 3000 });
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: dataDependent, life: 3000 });
+            }
         }
 
         dependentDialog.value = false;

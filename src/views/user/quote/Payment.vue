@@ -1,21 +1,17 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useDataAppointmentStore } from '../../../stores/dataAppointment';
 import { useAuthStore } from '../../../stores/auth';
 import { dformat } from '../../../utils/day';
 
-// Crea una variable reactiva para observar Culqi.token
 const culqiToken = ref(null);
 const dataAppointmentStore = useDataAppointmentStore();
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 const appointment = ref(null);
-const displayPaymentMethod = ref(false);
-const displayYape = ref(false);
-const displayCard = ref(false);
 const loading = ref(false);
 const documentType = ref(null);
 const buttonPaymentDisabled = ref(true);
@@ -40,14 +36,6 @@ const openPaymentMethod = async () => {
     });
 
     Culqi.open();
-};
-const payment = () => {
-    displayYape.value = false;
-    displayCard.value = false;
-    loading.value = true;
-
-    setTimeout(() => router.push('/quote/confirmation'), 1000);
-    setTimeout(() => (loading.value = false), 1000);
 };
 
 onMounted(async () => {
@@ -98,6 +86,7 @@ window.addEventListener('culqiTokenCreated', async (event) => {
     const response = await dataAppointmentStore.addPayment(culqiToken.value);
     if (response.message) {
         toast.add({ severity: 'error', summary: 'Error', detail: response.message, life: 4000 });
+        await dataAppointmentStore.deleteAppointmentId(dataAppointmentStore.appointment.appointmentId);
         Culqi.close();
     } else {
         toast.add({ severity: 'success', summary: 'Éxito', detail: 'Pago realizado correctamente', life: 4000 });

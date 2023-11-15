@@ -16,6 +16,10 @@
         "primeflex": "^3.2.1",
         "primeicons": "^6.0.1",
         "primevue": "3.28.0",
+        "qrcode": "^1.5.3",
+        "qrcode-svg": "^1.1.0",
+        "qrcode.vue": "^3.4.1",
+        "socket.io-client": "^4.7.2",
         "vue": "^3.2.41",
         "vue-culqi-checkout": "^1.0.0",
         "vue-router": "^4.1.5",
@@ -23,6 +27,7 @@
     },
     "devDependencies": {
         "@rushstack/eslint-patch": "^1.1.4",
+        "@types/qrcode": "^1.5.5",
         "@vitejs/plugin-vue": "^4.1.0",
         "@vue/eslint-config-prettier": "^7.0.0",
         "eslint": "^8.22.0",

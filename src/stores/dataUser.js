@@ -1,12 +1,29 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createUser, fetchUsers, getUser, updateUser, deleteUser, createPatients, fetchCollaborators, getDependents, createDependents, deleteDependent, updateAccessId, updateDoctor, updatePersonalizedPrice, createAccessUser } from '../api';
+import {
+    createUser,
+    fetchUsers,
+    getUser,
+    updateUser,
+    deleteUser,
+    createPatients,
+    fetchCollaborators,
+    getDependents,
+    createDependents,
+    deleteDependent,
+    updateAccessId,
+    updateDoctor,
+    updatePersonalizedPrice,
+    createAccessUser,
+    getPatients
+} from '../api';
 
 export const useDataUserStore = defineStore('datauserStore', {
     state: () => ({
         dataUser: cache.getItem('collaborator'),
         loadingDataUser: false,
         dependents: cache.getItem('dependents'),
+        patients: cache.getItem('patients'),
         msg: null
     }),
     actions: {
@@ -35,6 +52,17 @@ export const useDataUserStore = defineStore('datauserStore', {
                 this.loadingDataUser = false;
             }
         },
+        async getPatients() {
+            this.loadingDataUser = true;
+            try {
+                const { data } = await getPatients();
+                cache.setItem('patients', data);
+                this.patients = data;
+                return this.patients;
+            } catch (error) {
+                console.log(error);
+            }
+        },
         async getUsersDependents(userId) {
             this.loadingDataUser = true;
             try {
@@ -55,6 +83,7 @@ export const useDataUserStore = defineStore('datauserStore', {
                 //this.getUsersDependents()
             } catch (error) {
                 console.log(error);
+                return error.message;
             }
         },
         async updateUserDependents(dependentId, payload) {
