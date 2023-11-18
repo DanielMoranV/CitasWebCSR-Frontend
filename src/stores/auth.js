@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { sigin, currentUser, updateAccessUser, updateUser } from '../api';
+import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto } from '../api';
 //import useResponse from '../composables/useResponse';
 export const useAuthStore = defineStore({
     id: 'auth',
@@ -10,7 +10,8 @@ export const useAuthStore = defineStore({
         role: 'Invitado',
         returnUrl: '',
         sessionUser: false,
-        loadingUser: false
+        loadingUser: false,
+        urlProfilePhoto: ''
     }),
     getters: {
         hasRole: (state) => (roles) => {
@@ -86,6 +87,16 @@ export const useAuthStore = defineStore({
                 const dni = this.user.user.dni;
                 const { data } = await updateUser(dni, payload);
                 return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async getUrlProfilePhoto() {
+            try {
+                const namePhoto = this.user.user.photo;
+                const { url } = await urlProfilePhoto(namePhoto);
+                this.urlProfilePhoto = url;
+                return url;
             } catch (error) {
                 console.log(error);
             }

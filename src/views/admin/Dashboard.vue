@@ -27,7 +27,6 @@ onMounted(async () => {
     });
 
     getQrWp().then(({ url }) => (qrImageUrl.value = url));
-    console.log(qrImageUrl.value);
     productService.getProductsSmall().then((data) => (products.value = data));
 });
 

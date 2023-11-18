@@ -10,6 +10,7 @@ const authStore = useAuthStore();
 const loading = ref(false);
 const password = ref('');
 const password1 = ref('');
+const urlProfilePhoto = ref('');
 const dataUser = reactive({
     documentType: '',
     dni: '',
@@ -64,6 +65,7 @@ const updateDataUser = async () => {
 };
 
 onMounted(async () => {
+    await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
     await authStore.currentUser();
     const userData = authStore.user.user;
     Object.assign(dataUser, userData);
@@ -71,6 +73,7 @@ onMounted(async () => {
     // Formatear Fecha y hora
     const birthDate = dformat(dataUser.birthDate, 'DD MMMM YYYY');
     dataUser.birthDate = birthDate;
+    console.log(dataUser);
 });
 </script>
 <template>
@@ -107,6 +110,11 @@ onMounted(async () => {
         </div>
         <div class="col-12 md:col-6">
             <div class="card p-fluid">
+                <h5>Foto de perfil</h5>
+                <Image :src="urlProfilePhoto" alt="Image" width="250" preview />
+                <Toast />
+                <FileUpload mode="basic" name="demo[]" url="/api/upload" accept="image/*" :maxFileSize="1000000" @upload="onUpload" />
+
                 <h5>Modificar Contraseña</h5>
                 <span class="p-float-label mt-6">
                     <Password id="password" type="password" :toggleMask="true" v-model="password" />
