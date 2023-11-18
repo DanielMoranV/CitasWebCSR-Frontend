@@ -3,6 +3,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
 import { dformat, dparse } from '../../utils/day';
+import { backendURL } from '../../config';
 
 const toast = useToast();
 const authStore = useAuthStore();
@@ -11,6 +12,7 @@ const loading = ref(false);
 const password = ref('');
 const password1 = ref('');
 const urlProfilePhoto = ref('');
+const urlUpdatePhotoProfile = ref('');
 const dataUser = reactive({
     documentType: '',
     dni: '',
@@ -48,6 +50,15 @@ const updatePassword = async () => {
 
     loading.value = false;
 };
+const onUpload = async () => {
+    toast.add({ severity: 'success', summary: 'Datos actualizados correctamente', life: 4000 });
+    await authStore.currentUser();
+    await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
+};
+const beforeUpload = (request) => {
+    request.xhr.setRequestHeader('Authorization', authStore.user.token);
+    return request;
+};
 const updateDataUser = async () => {
     loading.value = true;
     console.log(dataUser);
@@ -65,7 +76,6 @@ const updateDataUser = async () => {
 };
 
 onMounted(async () => {
-    await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
     await authStore.currentUser();
     const userData = authStore.user.user;
     Object.assign(dataUser, userData);
@@ -74,6 +84,8 @@ onMounted(async () => {
     const birthDate = dformat(dataUser.birthDate, 'DD MMMM YYYY');
     dataUser.birthDate = birthDate;
     console.log(dataUser);
+    await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
+    urlUpdatePhotoProfile.value = `${backendURL}/api/v1/users/photoprofile/${dataUser.dni}`;
 });
 </script>
 <template>
@@ -110,10 +122,12 @@ onMounted(async () => {
         </div>
         <div class="col-12 md:col-6">
             <div class="card p-fluid">
-                <h5>Foto de perfil</h5>
-                <Image :src="urlProfilePhoto" alt="Image" width="250" preview />
-                <Toast />
-                <FileUpload mode="basic" name="demo[]" url="/api/upload" accept="image/*" :maxFileSize="1000000" @upload="onUpload" />
+                <div class="text-center mb-5">
+                    <div class="text-900 text-3xl font-medium mb-3">Foto de perfil</div>
+                    <Image :src="urlProfilePhoto" alt="Image" width="150" preview />
+                    <Toast />
+                    <FileUpload class="mt-2" mode="basic" name="profilePhoto" :url="urlUpdatePhotoProfile" @before-send="beforeUpload" accept="image/*" :maxFileSize="1000000" @upload="onUpload" />
+                </div>
 
                 <h5>Modificar Contraseña</h5>
                 <span class="p-float-label mt-6">
