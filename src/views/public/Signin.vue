@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive, watch } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from 'primevue/usetoast';
@@ -15,11 +15,8 @@ watch(
     () => authStore.sessionUser,
     async (newSession) => {
         if (newSession) {
-            // La sesión del usuario ha cambiado, realiza acciones aquí
             await authStore.currentUser();
-            //console.log('La sesión del usuario ha cambiado signin:', newSession);
         }
-        //console.log('La sesión del usuario ha cambiado signin else:', newSession);
     }
 );
 const sexItems = ref([
@@ -78,9 +75,7 @@ const validateAge = () => {
     return true; // Es mayor de edad
 };
 const isValidPhone = (value) => {
-    // Utiliza una expresión regular para validar el número de teléfono.
-    // Puedes personalizar esta expresión regular según tus necesidades.
-    const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
+    const phonePattern = /^[0-9]{9}$/;
 
     return phonePattern.test(value);
 };
@@ -135,10 +130,6 @@ const signinUser = async () => {
 const loginUser = () => {
     setTimeout(() => router.push('/auth/login'), 500);
 };
-
-onMounted(() => {
-    //console.log(radioValue);
-});
 </script>
 <template>
     <div class="card">

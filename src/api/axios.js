@@ -1,9 +1,6 @@
-/* eslint-disable prettier/prettier */
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
-//import { useResponse } from '../composables/useResponse';
 
-//const api_url = 'https://csrapi.serveo.net/api/v1';
 const api_url = 'http://localhost:8080/api/v1';
 
 const instance = axios.create({
@@ -41,7 +38,6 @@ instance.interceptors.response.use(
             errData = error.response.data;
 
             if ([401, 403].indexOf(error.response.status) !== -1) {
-                //useResponse().showAlert(errData);
                 console.log('if', errData);
             }
         }

@@ -33,8 +33,6 @@ const roleNames = ref({
     2: 'Admisionista'
 });
 const isValidPhone = (value) => {
-    // Utiliza una expresión regular para validar el número de teléfono.
-    // Puedes personalizar esta expresión regular según tus necesidades.
     const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
 
     return phonePattern.test(value);
@@ -185,23 +183,6 @@ const exportCSV = () => {
     console.log(dt.value);
     dt.value.exportCSV();
 };
-// const exportToExcel = () => {
-//     // Obtén los datos de la tabla
-//     const data = dt.value.value.map((row) => ({ ...row }));
-
-//     // Crea una hoja de cálculo a partir de los datos
-//     const worksheet = XLSX.utils.json_to_sheet(data);
-
-//     // Crea un libro de trabajo y añade la hoja de cálculo
-//     const workbook = XLSX.utils.book_new();
-//     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-//     // Escribe el libro de trabajo a un archivo Excel
-//     const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-
-//     // Guarda el archivo en el sistema del cliente
-//     saveAs(new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`);
-// };
 
 const onUpload = (event) => {
     const file = event.files[0];
