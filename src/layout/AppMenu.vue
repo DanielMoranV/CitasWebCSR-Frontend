@@ -22,7 +22,10 @@ const defaultMenuModel = [
     },
     {
         label: 'Admisión',
-        items: [{ label: 'Turnos Medicós', icon: 'pi pi-fw pi-list', to: '/shifts', roles: ['Admisionista'] }]
+        items: [
+            { label: 'Turnos Medicós', icon: 'pi pi-fw pi-list', to: '/shifts', roles: ['Admisionista'] },
+            { label: 'Pacientes', icon: 'pi pi-fw pi-users', to: '/patients', roles: ['Admisionista'] }
+        ]
     },
     {
         label: 'Médico',

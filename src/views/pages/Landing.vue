@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import AppConfig from '@/layout/AppConfig.vue';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useRouter } from 'vue-router';
+import { urlProfilePhoto } from '../../api';
 
 const router = useRouter();
 const dataDoctorStore = useDataDoctorStore();
@@ -26,8 +27,13 @@ const appointment = async (cmp) => {
     router.push('/signin');
 };
 onMounted(async () => {
-    const data = await dataDoctorStore.getInfoDoctors();
-    infoDoctors.value = data;
+    const urlUpdatePhotoProfile = await urlProfilePhoto('9137550.jpg');
+    infoDoctors.value = await dataDoctorStore.getInfoDoctors();
+    infoDoctors.value = infoDoctors.value.map((doctor) => {
+        console.log(doctor.photo);
+        doctor.urlProfilePhoto = `http://localhost:8080/api/v1/imgusers/photoprofile/image/${doctor.photo}/profile`;
+        return doctor;
+    });
 });
 </script>
 
@@ -94,10 +100,17 @@ onMounted(async () => {
 
                     <div v-for="doctor in infoDoctors" :key="doctor.cmp" class="col-12 md:col-12 lg:col-3 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
                         <div
-                            style="height: 250px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))"
+                            style="height: 470px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))"
                         >
                             <div class="p-3 surface-card h-full" style="border-radius: 8px">
+                                <div class="content-center center-container mb-2">
+                                    <div class="round-container">
+                                        <img :src="doctor.urlProfilePhoto" alt="Descripción de la imagen" />
+                                    </div>
+                                </div>
+
                                 <Button label="Agendar Cita" icon="fa-solid fa-user-doctor text-2xl text-white-700" class="col-12 p-button-success mr-2 mb-2" @click="appointment(doctor.cmp)"></Button>
+
                                 <h5 class="mb-2 text-900">{{ doctor.medico }}</h5>
                                 <p class="text-600">CMP : {{ doctor.cmp }}</p>
                                 <span class="text-600">Especialidad : {{ doctor.specialization }}</span>
@@ -366,8 +379,25 @@ onMounted(async () => {
     <AppConfig simple />
 </template>
 
-<!-- <style scoped>
-#hero {
+<style scoped>
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.round-container {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.round-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajusta el comportamiento de la imagen para cubrir el contenedor */
+}
+/* #hero {
     background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, #eeefaf 0%, #c3e3fa 100%);
     height: 700px;
     overflow: hidden;
@@ -410,5 +440,5 @@ onMounted(async () => {
         width: 100%;
         max-width: 100%;
     }
-}
-</style> -->
+} */
+</style>

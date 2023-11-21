@@ -5,7 +5,6 @@ import { useToast } from 'primevue/usetoast';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useDataUserStore } from '../../stores/dataUser';
 import { dformat, dparse } from '../../utils/day';
-//import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { useRouter } from 'vue-router';
 import cache from '../../utils/cache';
@@ -36,7 +35,6 @@ const nextSchedule = (dataDoctor) => {
 
     router.push('/timetable');
 };
-//const roleItems = ref([{ name: 'Médico', code: 3 }]);
 
 const roleNames = ref({
     3: 'Médico'
@@ -56,8 +54,6 @@ const isValidDni = (value) => {
 };
 
 const isValidPhone = (value) => {
-    // Utiliza una expresión regular para validar el número de teléfono.
-    // Puedes personalizar esta expresión regular según tus necesidades.
     const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
 
     return phonePattern.test(value);
@@ -170,12 +166,6 @@ const updateUser = async () => {
             payload.access.accessId = user.value.accessId;
             payload.userId = user.value.user.userId;
             payload.Doctor.doctorId = user.value.user.Doctor.doctorId;
-            // payload.Doctor.personalizedPrices = [
-            //     {
-            //         personalizedPriceId: user.value.user.Doctor.personalizedPrices[0].personalizedPriceId,
-            //         doctorId: user.value.user.Doctor.doctorId
-            //     }
-            // ];
             payload.Doctor.personalizedPrices[0].personalizedPriceId = user.value.user.Doctor.personalizedPrices[0].personalizedPriceId;
             payload.Doctor.personalizedPrices[0].doctorId = user.value.user.Doctor.doctorId;
             console.log('user:', user.value);
@@ -240,24 +230,6 @@ const exportCSV = () => {
     console.log(dt.value);
     dt.value.exportCSV();
 };
-// const exportToExcel = () => {
-//     // Obtén los datos de la tabla
-//     const data = dt.value.value.map((row) => ({ ...row }));
-
-//     // Crea una hoja de cálculo a partir de los datos
-//     const worksheet = XLSX.utils.json_to_sheet(data);
-
-//     // Crea un libro de trabajo y añade la hoja de cálculo
-//     const workbook = XLSX.utils.book_new();
-//     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-//     // Escribe el libro de trabajo a un archivo Excel
-//     const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-
-//     // Guarda el archivo en el sistema del cliente
-//     saveAs(new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`);
-// };
-
 const onUpload = (event) => {
     const file = event.files[0];
     const reader = new FileReader();

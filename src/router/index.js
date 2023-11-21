@@ -70,6 +70,11 @@ const router = createRouter({
                     component: () => import('@/views/admission/Shifts.vue')
                 },
                 {
+                    path: '/patients',
+                    name: 'shifts',
+                    component: () => import('@/views/admission/Patients.vue')
+                },
+                {
                     path: '/users',
                     name: 'users',
                     component: () => import('@/views/admin/Users.vue')
