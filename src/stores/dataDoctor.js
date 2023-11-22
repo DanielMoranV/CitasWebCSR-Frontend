@@ -5,7 +5,7 @@ import { apiGetInfoDoctors, apiGetInfoDoctor, apiGetDoctors, apiGetDoctorSchedul
 export const useDataDoctorStore = defineStore({
     id: 'doctors',
     state: () => ({
-        doctors: null,
+        doctors: cache.getItem('doctors'),
         doctor: cache.getItem('doctor'),
         schedule: cache.getItem('schedule'),
         msg: {},
