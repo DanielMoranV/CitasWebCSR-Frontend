@@ -55,9 +55,9 @@ export const useAuthStore = defineStore({
             this.role = 'Invitado';
             cache.cleanAll();
         },
-        async currentUser() {
+        async currentUser(dni) {
             try {
-                const { data } = await currentUser();
+                const { data } = await currentUser(dni);
                 //const token = this.user.token;
                 const email = data.user.email;
                 const phone = data.user.phone;

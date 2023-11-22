@@ -15,7 +15,7 @@ watch(
     () => authStore.sessionUser,
     async (newSession) => {
         if (newSession) {
-            await authStore.currentUser();
+            await authStore.currentUser(authStore.user.user.dni);
         }
     }
 );

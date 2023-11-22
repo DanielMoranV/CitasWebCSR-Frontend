@@ -14,7 +14,7 @@ export const updateUser = (dni, payload) => axios.put(`/users/${dni}`, payload);
 export const createUser = (payload) => axios.post('/users', payload);
 export const getUser = (dni) => axios.get(`/users/${dni}`);
 export const deleteUser = (dni) => axios.delete(`/users/${dni}`);
-export const currentUser = () => axios.get('/users/currentuser');
+export const currentUser = (dni) => axios.get(`/users/currentuser/${dni}`);
 export const urlProfilePhoto = (namePhoto) => axios.get(`/imgusers//photoprofile/${namePhoto}`);
 
 // COLABORADORES
