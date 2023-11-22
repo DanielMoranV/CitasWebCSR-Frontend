@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import AppConfig from '@/layout/AppConfig.vue';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useRouter } from 'vue-router';
-import { urlProfilePhoto } from '../../api';
+import { backendURL } from '../../config';
 
 const router = useRouter();
 const dataDoctorStore = useDataDoctorStore();
@@ -30,7 +30,7 @@ onMounted(async () => {
     infoDoctors.value = await dataDoctorStore.getInfoDoctors();
     infoDoctors.value = infoDoctors.value.map((doctor) => {
         console.log(doctor.photo);
-        doctor.urlProfilePhoto = `http://23.20.218.245:8080/api/v1/imgusers/photoprofile/image/${doctor.photo}/profile`;
+        doctor.urlProfilePhoto = `${backendURL}/api/v1/imgusers/photoprofile/image/${doctor.photo}/profile`;
         return doctor;
     });
 });
