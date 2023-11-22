@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { getInfoDoctors, getInfoDoctor, getDoctors, getDoctorSchedule, createtDoctorSchedule } from '../api';
+import { apiGetInfoDoctors, apiGetInfoDoctor, apiGetDoctors, apiGetDoctorSchedule, apiCreatetDoctorSchedule } from '../api';
 
 export const useDataDoctorStore = defineStore({
     id: 'doctors',
     state: () => ({
-        doctors: cache.getItem('doctors'),
+        doctors: null,
         doctor: cache.getItem('doctor'),
         schedule: cache.getItem('schedule'),
         msg: {},
@@ -23,7 +23,7 @@ export const useDataDoctorStore = defineStore({
     actions: {
         async getInfoDoctors() {
             try {
-                const { data } = await getInfoDoctors();
+                const { data } = await apiGetInfoDoctors();
                 cache.setItem('doctors', data);
                 this.doctors = data;
                 return data;
@@ -33,7 +33,8 @@ export const useDataDoctorStore = defineStore({
         },
         async getDoctors() {
             try {
-                const { data } = await getDoctors();
+                const { data } = await apiGetDoctors();
+                console.log(data);
                 cache.setItem('doctors', data);
                 this.doctors = data;
                 return data;
@@ -43,7 +44,7 @@ export const useDataDoctorStore = defineStore({
         },
         async getInfoDoctor(cmp) {
             try {
-                const { data } = await getInfoDoctor(cmp);
+                const { data } = await apiGetInfoDoctor(cmp);
                 cache.setItem('doctor', data);
                 this.doctor = data;
                 return data;
@@ -53,7 +54,7 @@ export const useDataDoctorStore = defineStore({
         },
         async getDoctorSchedule(doctorId) {
             try {
-                const { data } = await getDoctorSchedule(doctorId);
+                const { data } = await apiGetDoctorSchedule(doctorId);
                 cache.setItem('schedule', data);
                 this.schedule = data;
                 return this.schedule;
@@ -63,7 +64,7 @@ export const useDataDoctorStore = defineStore({
         },
         async addDoctorSchedule(payload) {
             try {
-                const { data } = await createtDoctorSchedule(payload);
+                const { data } = await apiCreatetDoctorSchedule(payload);
                 return data;
             } catch (error) {
                 console.log(error);

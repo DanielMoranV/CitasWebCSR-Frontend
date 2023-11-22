@@ -25,13 +25,13 @@ export const getCollaborator = (dni) => axios.get(`/collaborator/${dni}`);
 export const deleteCollaborator = (dni) => axios.delete(`/collaborator/${dni}`);
 
 // MÉDICOS
-export const getInfoDoctors = () => axios.get('/infodoctors');
-export const getInfoDoctor = (cmp) => axios.get(`/infodoctors/${cmp}`);
-export const getDoctors = () => axios.get('/doctors');
-export const updateDoctor = (doctorId, payload) => axios.put(`/doctors/${doctorId}`, payload);
-export const updatePersonalizedPrice = (personalizedPriceId, payload) => axios.put(`/doctors/personalizedPrice/${personalizedPriceId}`, payload);
-export const getDoctorSchedule = (doctorId) => axios.get(`doctors/${doctorId}/schedule`);
-export const createtDoctorSchedule = (payload) => axios.post(`doctors/schedule`, payload);
+export const apiGetInfoDoctors = () => axios.get('/infodoctors');
+export const apiGetInfoDoctor = (cmp) => axios.get(`/infodoctors/${cmp}`);
+export const apiGetDoctors = () => axios.get('/doctors');
+export const apiUpdateDoctor = (doctorId, payload) => axios.put(`/doctors/${doctorId}`, payload);
+export const apiUpdatePersonalizedPrice = (personalizedPriceId, payload) => axios.put(`/doctors/personalizedPrice/${personalizedPriceId}`, payload);
+export const apiGetDoctorSchedule = (doctorId) => axios.get(`doctors/${doctorId}/schedule`);
+export const apiCreatetDoctorSchedule = (payload) => axios.post(`doctors/schedule`, payload);
 
 // DEPENDIENTES
 export const getDependents = (userdni) => axios.get(`/users/${userdni}/dependents`);
