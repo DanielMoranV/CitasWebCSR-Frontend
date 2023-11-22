@@ -29,10 +29,10 @@ const appointment = async (cmp) => {
 onMounted(async () => {
     infoDoctors.value = await dataDoctorStore.getInfoDoctors();
     infoDoctors.value = infoDoctors.value.map((doctor) => {
-        console.log(doctor.photo);
         doctor.urlProfilePhoto = `${backendURL}/api/v1/imgusers/photoprofile/image/${doctor.photo}/profile`;
         return doctor;
     });
+    console.log(infoDoctors.value);
 });
 </script>
 

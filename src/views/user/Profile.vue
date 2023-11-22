@@ -52,7 +52,7 @@ const updatePassword = async () => {
 };
 const onUpload = async () => {
     toast.add({ severity: 'success', summary: 'Datos actualizados correctamente', life: 4000 });
-    await authStore.currentUser(authStore.user.user.dni);
+    await authStore.currentUser(authStore.user.username);
     await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
 };
 const beforeUpload = (request) => {
@@ -76,7 +76,8 @@ const updateDataUser = async () => {
 };
 
 onMounted(async () => {
-    await authStore.currentUser(authStore.user.user.dni);
+    console.log(authStore.user.username);
+    await authStore.currentUser(authStore.user.username);
     const userData = authStore.user.user;
     Object.assign(dataUser, userData);
 

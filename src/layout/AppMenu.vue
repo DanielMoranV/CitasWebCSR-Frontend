@@ -72,7 +72,7 @@ function updateMenuModel() {
     // Si existe un objeto doctor en dataDoctorStore, se muestra un mensaje en la consola
 }
 onMounted(async () => {
-    await authStore.currentUser(authStore.user.user.dni);
+    await authStore.currentUser(authStore.user.username);
     updateMenuModel();
 });
 
@@ -81,7 +81,7 @@ watch(
     async (newSession) => {
         model.value = defaultMenuModel;
         if (newSession) {
-            await authStore.currentUser(authStore.user.user.dni);
+            await authStore.currentUser(authStore.user.username);
             updateMenuModel();
         }
     }

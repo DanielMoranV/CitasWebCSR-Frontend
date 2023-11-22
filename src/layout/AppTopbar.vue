@@ -22,7 +22,7 @@ const getEssentialData = () => {
     }
 };
 onMounted(async () => {
-    await authStore.currentUser(authStore.user.user.dni);
+    await authStore.currentUser(authStore.user.username);
     getEssentialData();
     bindOutsideClickListener();
 });
@@ -32,7 +32,7 @@ watch(
     async (newSession) => {
         if (newSession) {
             // La sesión del usuario ha cambiado, realiza acciones aquí
-            await authStore.currentUser(authStore.user.user.dni);
+            await authStore.currentUser(authStore.user.username);
             getEssentialData();
             //console.log('La sesión del usuario ha cambiado topbar:', newSession);
         }
