@@ -12,8 +12,8 @@ import {
     createDependents,
     deleteDependent,
     updateAccessId,
-    updateDoctor,
-    updatePersonalizedPrice,
+    apiUpdateDoctor,
+    apiUpdatePersonalizedPrice,
     createAccessUser,
     getPatients
 } from '../api';
@@ -124,8 +124,8 @@ export const useDataUserStore = defineStore('datauserStore', {
                 const { personalizedPrices, ...dataDoctor } = Doctor;
                 await updateUser(userId, user);
                 await updateAccessId(accessId, access);
-                await updateDoctor(doctorId, dataDoctor);
-                await updatePersonalizedPrice(personalizedPriceId, personalizedPrices[0]);
+                await apiUpdateDoctor(doctorId, dataDoctor);
+                await apiUpdatePersonalizedPrice(personalizedPriceId, personalizedPrices[0]);
             } catch (error) {
                 console.log(error.message);
             }
