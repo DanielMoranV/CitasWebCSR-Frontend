@@ -55,12 +55,25 @@ onBeforeMount(() => {
 });
 const filename = `listcolaborator-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
-    await dataUserStore.getCollaborators().then((data) => {
+    await dataUserStore.getPatients().then((data) => {
         users.value = data.map((user) => {
             let birthDate = dformat(user.user.birthDate, 'DD MMMM YYYY');
             user.user.birthDate = birthDate;
-            // Agrega el campo roleName basado en roleId
-            user.roleName = roleNames.value[user.roleId];
+            if (user.user.dependents.length) {
+                console.log('Tengo dependiente');
+                users.value.push({
+                    address: user.user.dependents.address,
+                    birthDate: user.user.dependents.birthDate,
+                    dependentId: user.user.dependents.dependentId,
+                    dni: user.user.dependents.dni,
+                    documentType: user.user.dependents.documentType,
+                    name: user.user.dependents.name,
+                    photo: user.user.dependents.photo,
+                    sex: user.user.dependents.sex,
+                    surnames: user.user.dependents.surnames,
+                    userId: user.user.dependents.userId
+                });
+            }
             return user;
         });
     });
@@ -215,7 +228,7 @@ const deleteSelectedUsers = () => {
     });
     deleteUsersDialog.value = false;
     selectedUsers.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Colaboradores deshabilitados', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Pacientes deshabilitados', life: 3000 });
 };
 
 const initFilters = () => {
@@ -263,7 +276,7 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} Colaboradores"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} Pacientes"
                     responsiveLayout="scroll"
                     :exportFilename="filename"
                 >

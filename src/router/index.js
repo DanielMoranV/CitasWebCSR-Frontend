@@ -71,7 +71,7 @@ const router = createRouter({
                 },
                 {
                     path: '/patients',
-                    name: 'shifts',
+                    name: 'patients',
                     component: () => import('@/views/admission/Patients.vue')
                 },
                 {
