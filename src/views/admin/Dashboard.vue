@@ -17,6 +17,7 @@ const qrImageUrl = ref('');
 const productService = new ProductService();
 onMounted(async () => {
     socket.on('newQr', async (qr) => {
+        console.log(qr);
         getQrWp().then(({ url }) => (qrImageUrl.value = url));
         sessionStarted.value = false;
         localStorage.removeItem('sessionStarted');
