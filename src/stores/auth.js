@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto } from '../api';
+import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto, searchbydni } from '../api';
 //import useResponse from '../composables/useResponse';
 export const useAuthStore = defineStore({
     id: 'auth',
@@ -31,6 +31,14 @@ export const useAuthStore = defineStore({
         }
     },
     actions: {
+        async searchbydni(dni) {
+            try {
+                const { data } = await searchbydni(dni);
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
         async login(payload) {
             try {
                 const { data } = await sigin(payload);

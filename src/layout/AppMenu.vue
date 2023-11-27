@@ -72,7 +72,10 @@ function updateMenuModel() {
     // Si existe un objeto doctor en dataDoctorStore, se muestra un mensaje en la consola
 }
 onMounted(async () => {
-    await authStore.currentUser(authStore.user.username);
+    if (authStore.user) {
+        await authStore.currentUser(authStore.user.username);
+    }
+
     updateMenuModel();
 });
 

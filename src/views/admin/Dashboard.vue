@@ -46,7 +46,7 @@ onMounted(async () => {
                     </div>
                 </div>
                 <div class="flex justify-content-center">
-                    <Image :src="qrImageUrl" alt="Image" width="250" />
+                    <Image :v-if="sessionStarted" :src="qrImageUrl" alt="Image" width="250" />
                 </div>
                 <div :class="sessionStarted ? 'text-green-500' : 'text-red-500'" class="font-medium text-xl">
                     {{ sessionStarted ? 'Sesión iniciada correctamente' : 'Whatsapp Offline' }}

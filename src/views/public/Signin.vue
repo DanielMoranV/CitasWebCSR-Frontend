@@ -10,28 +10,9 @@ const toast = useToast();
 const authStore = useAuthStore();
 const dataUserStore = useDataUserStore();
 const submitted = ref(false);
-// Observa cambios en la sesión del usuario
-watch(
-    () => authStore.sessionUser,
-    async (newSession) => {
-        if (newSession) {
-            await authStore.currentUser(authStore.user.username);
-        }
-    }
-);
-const sexItems = ref([
-    { name: 'Masculino', code: 'Masculino' },
-    { name: 'Femenino', code: 'Femenino' }
-]);
-const civilStatusItems = ref([
-    { name: 'Soltero', code: 'Soltero' },
-    { name: 'Casado', code: 'Casado' },
-    { name: 'Divorciado', code: 'Divorciado' },
-    { name: 'Viudo', code: 'Viudo' }
-]);
-
+const disabledInput = ref(true);
 const dataUser = reactive({
-    documentType: '',
+    documentType: 'DNI',
     dni: '',
     name: '',
     surnames: '',
@@ -42,6 +23,27 @@ const dataUser = reactive({
     sex: '',
     civilStatus: ''
 });
+// Observa cambios en la sesión del usuario
+watch([() => authStore.sessionUser, () => dataUser.dni], async ([newSessionUser, newDni]) => {
+    // Lógica que se ejecuta cuando cualquiera de las variables cambia
+    if (newSessionUser && authStore.user) {
+        await authStore.currentUser(authStore.user.username);
+    }
+    // También puedes acceder a newDni y realizar acciones según sea necesario
+    if (isValidDni(newDni)) {
+        searchByDNI(newDni);
+    }
+});
+const sexItems = ref([
+    { name: 'Masculino', code: 'Masculino' },
+    { name: 'Femenino', code: 'Femenino' }
+]);
+const civilStatusItems = ref([
+    { name: 'Soltero', code: 'Soltero' },
+    { name: 'Casado', code: 'Casado' },
+    { name: 'Divorciado', code: 'Divorciado' },
+    { name: 'Viudo', code: 'Viudo' }
+]);
 
 const loading = ref(false);
 
@@ -79,14 +81,27 @@ const isValidPhone = (value) => {
 
     return phonePattern.test(value);
 };
+const searchByDNI = async (dni) => {
+    const infoReniec = await authStore.searchbydni(dni);
+    dataUser.name = infoReniec?.nombres || '';
+    dataUser.surnames = infoReniec?.apellidop + ' ' + infoReniec?.apellidom;
+    if (!infoReniec) {
+        dataUser.dni = '';
+        dataUser.name = '';
+        dataUser.surnames = '';
+    }
+};
 const isValidDni = (value) => {
     if (dataUser.documentType === 'DNI') {
+        disabledInput.value = true;
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
         return /^\d{8}$/.test(value);
     } else if (dataUser.documentType === 'CE') {
+        disabledInput.value = false;
         // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
         return /^\d{9}$/.test(value);
     } else if (dataUser.documentType === 'Pasaporte') {
+        disabledInput.value = false;
         // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
         return /^[A-Za-z0-9]{5,20}$/.test(value);
     }
@@ -166,11 +181,11 @@ const loginUser = () => {
             </div>
             <div class="field col-12 md:col-6">
                 <label for="name">Nombre</label>
-                <InputText id="name" type="text" v-model="dataUser.name" />
+                <InputText :disabled="disabledInput" id="name" type="text" v-model="dataUser.name" />
             </div>
             <div class="field col-12 md:col-6">
                 <label for="surnames">Apellidos</label>
-                <InputText id="surnames" type="text" v-model="dataUser.surnames" />
+                <InputText :disabled="disabledInput" id="surnames" type="text" v-model="dataUser.surnames" />
             </div>
             <div class="field col-12 md:col-6">
                 <label for="email">Email</label>

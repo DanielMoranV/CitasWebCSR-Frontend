@@ -22,9 +22,11 @@ const sexItems = ref([
     { name: 'Masculino', code: 'Masculino' },
     { name: 'Femenino', code: 'Femenino' }
 ]);
-const roleItems = ref([
-    { name: 'Administrador', code: 1 },
-    { name: 'Admisionista', code: 2 }
+const civilStatusItems = ref([
+    { name: 'Soltero', code: 'Soltero' },
+    { name: 'Casado', code: 'Casado' },
+    { name: 'Viudo', code: 'Viudo' },
+    { name: 'Divorciado', code: 'Divorciado' }
 ]);
 
 const roleNames = ref({
@@ -56,28 +58,20 @@ onBeforeMount(() => {
 const filename = `listcolaborator-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
     await dataUserStore.getPatients().then((data) => {
-        users.value = data.map((user) => {
-            let birthDate = dformat(user.user.birthDate, 'DD MMMM YYYY');
-            user.user.birthDate = birthDate;
-            if (user.user.dependents.length) {
-                console.log('Tengo dependiente');
-                users.value.push({
-                    address: user.user.dependents.address,
-                    birthDate: user.user.dependents.birthDate,
-                    dependentId: user.user.dependents.dependentId,
-                    dni: user.user.dependents.dni,
-                    documentType: user.user.dependents.documentType,
-                    name: user.user.dependents.name,
-                    photo: user.user.dependents.photo,
-                    sex: user.user.dependents.sex,
-                    surnames: user.user.dependents.surnames,
-                    userId: user.user.dependents.userId
-                });
-            }
-            return user;
+        users.value = data.flatMap((user) => {
+            // Crear un array que contiene tanto el usuario como sus dependientes
+            const combinedArray = [{ user: user.user }, ...(user.user.dependents || []).map((dependent) => ({ user: dependent }))];
+            console.log(combinedArray);
+            return combinedArray;
         });
     });
-    console.log(users.value);
+
+    users.value.map((user) => {
+        let birthDate = dformat(user.user.birthDate, 'DD MMMM YYYY');
+        user.user.birthDate = birthDate;
+        user = user.user;
+    });
+    console.log('holi', users.value);
 });
 
 const openNew = () => {
@@ -133,9 +127,9 @@ const updateUser = async () => {
         sex: user.value.user.sex,
         surnames: user.value.user.surnames,
         access: {
-            username: `${user.value.user.dni}-${user.value.roleId}`,
+            username: `${user.value.user.dni}`,
             password: user.value.user.dni,
-            roleId: user.value.roleId
+            roleId: 4
         }
     };
 
@@ -184,7 +178,8 @@ const confirmDeleteUser = (editUser) => {
 };
 
 const deleteUser = async () => {
-    users.value = users.value.filter((val) => val.accessId !== user.value.accessId);
+    console.log(user.value.user);
+    user.value = users.value.filter((val) => val.user.accessId !== user.value.user.accessId);
     await dataUserStore.disableUser(user.value.accessId);
     deleteUserDialog.value = false;
     user.value = {};
@@ -309,16 +304,16 @@ const initFilters = () => {
                             {{ slotProps.data.user.surnames }}
                         </template>
                     </Column>
-                    <Column field="roleName" header="Rol" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="roleName" header="Fecha de Nacimiento" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Rol</span>
-                            {{ slotProps.data.roleName }}
+                            <span class="p-column-title">Fecha Nacimiento</span>
+                            {{ slotProps.data.user.birthDate }}
                         </template>
                     </Column>
-                    <Column field="status" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="status" header="Teléfono" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Status</span>
-                            <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status }}</span>
+                            <span class="p-column-title">Teléfono</span>
+                            {{ slotProps.data.user.phone }}
                         </template>
                     </Column>
                     <Column headerStyle="min-width:10rem;" header="Acciones">
@@ -382,8 +377,8 @@ const initFilters = () => {
                             <Dropdown id="sex" v-model="user.user.sex" :options="sexItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
                         </div>
                         <div class="field col">
-                            <label for="role">Rol</label>
-                            <Dropdown id="role" v-model="user.roleId" :options="roleItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
+                            <label for="role">Estado Civil</label>
+                            <Dropdown id="civilStatus" v-model="user.user.civilStatus" :options="civilStatusItems" optionLabel="name" placeholder="Selecciona" optionValue="code"></Dropdown>
                         </div>
                     </div>
                     <template #footer>

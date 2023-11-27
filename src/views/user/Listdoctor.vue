@@ -1,17 +1,13 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
-import { useToast } from 'primevue/usetoast';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
-import { useDataUserStore } from '../../stores/dataUser';
-import { dformat, dparse } from '../../utils/day';
+import { dformat } from '../../utils/day';
 import { useRouter } from 'vue-router';
 import cache from '../../utils/cache';
 
 const router = useRouter();
-const toast = useToast();
 const dataDoctorStore = useDataDoctorStore();
-const dataUserStore = useDataUserStore();
 
 const users = ref(null);
 

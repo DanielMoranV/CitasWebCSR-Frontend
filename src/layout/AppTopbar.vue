@@ -22,15 +22,18 @@ const getEssentialData = () => {
     }
 };
 onMounted(async () => {
-    await authStore.currentUser(authStore.user.username);
-    getEssentialData();
+    if (authStore.user) {
+        await authStore.currentUser(authStore.user.username);
+        getEssentialData();
+    }
+
     bindOutsideClickListener();
 });
 // Observa cambios en la sesión del usuario
 watch(
     () => authStore.sessionUser,
     async (newSession) => {
-        if (newSession) {
+        if (newSession && authStore.user) {
             // La sesión del usuario ha cambiado, realiza acciones aquí
             await authStore.currentUser(authStore.user.username);
             getEssentialData();

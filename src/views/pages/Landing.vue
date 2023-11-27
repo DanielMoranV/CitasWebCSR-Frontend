@@ -34,8 +34,6 @@ onMounted(async () => {
             return doctor;
         });
     }
-
-    console.log(infoDoctors.value);
 });
 </script>
 

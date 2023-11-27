@@ -26,7 +26,6 @@ onMounted(async () => {
     await dataAppointment.getAppointmentUserId(dataAuthStore.user.user.userId).then((res) => (appointmentLists.value = res));
     // console.log(appointmentLists.value);
     appointmentLists.value.forEach((appointment) => {
-        console.log(appointment);
         appointment.nameDoctor = `${appointment.doctor.user.surnames} ${appointment.doctor.user.name}`;
         if (appointment.dependent) {
             appointment.patient = `${appointment.dependent.name} ${appointment.dependent.surnames}`;

@@ -42,6 +42,7 @@ export const deleteDependent = (dependentId) => axios.delete(`/users/dependents/
 // PACIENTES
 export const createPatients = (payload) => axios.post('/patients', payload);
 export const getPatients = () => axios.get(`/patients`);
+export const searchbydni = (dni) => axios.get(`/patients/searchbydni/${dni}`);
 
 // Citas Medicas
 export const createappointment = (payload) => axios.post('/appointment', payload);
