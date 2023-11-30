@@ -106,6 +106,7 @@ export const useAuthStore = defineStore({
                 const namePhoto = this.user.user.photo;
                 const { url } = await urlProfilePhoto(namePhoto);
                 this.urlProfilePhoto = url;
+                console.log(url);
                 return url;
             } catch (error) {
                 console.log(error);

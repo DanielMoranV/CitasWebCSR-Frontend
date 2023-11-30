@@ -87,6 +87,7 @@ onMounted(async () => {
     console.log(dataUser);
     await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
     urlUpdatePhotoProfile.value = `${backendURL}/api/v1/users/photoprofile/${dataUser.dni}`;
+    console.log(urlProfilePhoto.value);
 });
 </script>
 <template>
