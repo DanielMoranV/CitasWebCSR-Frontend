@@ -58,15 +58,16 @@ onMounted(async () => {
         console.log(data);
         users.value = data.flatMap((user) => {
             // Crear un array que contiene tanto el usuario como sus dependientes
-            const combinedArray = [{ user: user.user }, ...(user.user.dependents || []).map((dependent) => ({ user: dependent }))];
+            const combinedArray = [{ accessId: user.accessId, user: user.user }, ...(user.user.dependents || []).map((dependent) => ({ accessId: dependent.accessId, user: dependent }))];
             return combinedArray;
         });
     });
-
+    console.log('usuarios:', users.value);
     users.value.forEach((user) => {
         const currentUser = user.user;
         let birthDate = dformat(currentUser.birthDate, 'DD MMMM YYYY');
         currentUser.birthDate = birthDate;
+        currentUser.accessId = user.accessId;
         listPatients.value.push(currentUser);
     });
     console.log(listPatients.value);
