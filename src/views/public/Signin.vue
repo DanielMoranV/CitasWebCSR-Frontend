@@ -30,7 +30,7 @@ watch([() => authStore.sessionUser, () => dataUser.dni], async ([newSessionUser,
         await authStore.currentUser(authStore.user.username);
     }
     // También puedes acceder a newDni y realizar acciones según sea necesario
-    if (isValidDni(newDni)) {
+    if (isValidDni(newDni) && dataUser.documentType === 'DNI') {
         searchByDNI(newDni);
     }
 });

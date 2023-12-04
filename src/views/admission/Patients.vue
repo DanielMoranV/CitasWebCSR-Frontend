@@ -1,15 +1,18 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onBeforeMount, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
+import { useAuthStore } from '../../stores/auth';
 import { dformat, dparse } from '../../utils/day';
 import * as XLSX from 'xlsx';
 
 const toast = useToast();
+const authStore = useAuthStore();
 const dataUserStore = useDataUserStore();
 
 const users = ref(null);
+const disabledInput = ref(true);
 const listPatients = ref([]);
 const patient = ref({});
 const userDialog = ref(false);
@@ -29,7 +32,26 @@ const civilStatusItems = ref([
     { name: 'Viudo', code: 'Viudo' },
     { name: 'Divorciado', code: 'Divorciado' }
 ]);
+watch([() => patient.value.dni], async ([newDni]) => {
+    // También puedes acceder a newDni y realizar acciones según sea necesario
+    if (isValidDni(newDni) && patient.value.documentType === 'DNI') {
+        searchByDNI(newDni);
+    }
+});
 
+const searchByDNI = async (dni) => {
+    const infoReniec = await authStore.searchbydni(dni);
+    if (!infoReniec) {
+        patient.value.dni = '';
+        patient.value.name = '';
+        patient.value.surnames = '';
+        toast.add({ severity: 'error', summary: 'Error', detail: 'DNI no encontrado; intente nuevamente', life: 3000 });
+    } else {
+        patient.value.name = infoReniec?.nombres || '';
+        patient.value.surnames = infoReniec?.apellidop + ' ' + infoReniec?.apellidom;
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'DNI encontrado', life: 3000 });
+    }
+};
 const isValidPhone = (value) => {
     const phonePattern = /^[0-9]{9}$/; // Este patrón asume un número de 9 dígitos.
 
@@ -37,12 +59,15 @@ const isValidPhone = (value) => {
 };
 const isValidDni = (value) => {
     if (patient.value.documentType === 'DNI') {
+        disabledInput.value = true;
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
         return /^\d{8}$/.test(value);
     } else if (patient.value.documentType === 'CE') {
+        disabledInput.value = false;
         // Para Carnet de extranjería, verificar que solo contiene 9 dígitos de 0-9
         return /^\d{9}$/.test(value);
     } else if (patient.value.documentType === 'Pasaporte') {
+        disabledInput.value = false;
         // Para Pasaporte, verificar que contiene letras y números y tiene hasta 20 caracteres
         return /^[A-Za-z0-9]{5,20}$/.test(value);
     }
@@ -55,14 +80,12 @@ onBeforeMount(() => {
 const filename = `listpatients-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
     await dataUserStore.getPatients().then((data) => {
-        console.log(data);
         users.value = data.flatMap((user) => {
             // Crear un array que contiene tanto el usuario como sus dependientes
             const combinedArray = [{ accessId: user.accessId, user: user.user }, ...(user.user.dependents || []).map((dependent) => ({ accessId: dependent.accessId, user: dependent }))];
             return combinedArray;
         });
     });
-    console.log('usuarios:', users.value);
     users.value.forEach((user) => {
         const currentUser = user.user;
         let birthDate = dformat(currentUser.birthDate, 'DD MMMM YYYY');
@@ -76,27 +99,18 @@ onMounted(async () => {
 const openNew = () => {
     patient.value = {
         accessId: null,
-        active: null,
-        createAt: null,
-        lastSession: null,
-        password: null,
-        roleId: null,
-        roleName: null,
-        status: null,
-        user: {
-            address: null,
-            birthDate: null,
-            civilStatus: null,
-            dni: null,
-            documentType: 'DNI',
-            email: null,
-            name: null,
-            phone: null,
-            photo: null,
-            sex: null,
-            surnames: null,
-            userId: null
-        }
+        address: null,
+        birthDate: null,
+        civilStatus: null,
+        dni: null,
+        documentType: 'DNI',
+        email: null,
+        name: null,
+        phone: null,
+        photo: null,
+        sex: null,
+        surnames: null,
+        userId: null
     };
     submitted.value = false;
     userDialog.value = true;
@@ -176,8 +190,15 @@ const confirmDeleteUser = (editUser) => {
 
 const deleteUser = async () => {
     console.log(patient.value);
-    patient.value = listPatients.value.filter((val) => val.user.accessId !== patient.value.accessId);
-    await dataUserStore.disableUser(patient.value.accessId);
+    if (patient.value.accessId == undefined) {
+        listPatients.value = listPatients.value.filter((val) => val.dni !== patient.value.dni);
+        await dataUserStore.deleteUserDependents(patient.value.dependentId);
+    } else {
+        listPatients.value = listPatients.value.filter((val) => val.accessId !== patient.value.accessId);
+        await dataUserStore.disableUser(patient.value.accessId);
+    }
+
+    console.log(patient.value);
     deleteUserDialog.value = false;
     patient.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
@@ -216,7 +237,8 @@ const deleteSelectedUsers = () => {
     const selectedIds = selectedUsers.value.map((user) => user.dni);
 
     selectedIds.forEach(async (accessId) => {
-        await dataUserStore.disableUser(accessId);
+        console.log(accessId);
+        //await dataUserStore.disableUser(accessId);
     });
     deleteUsersDialog.value = false;
     selectedUsers.value = null;
@@ -347,13 +369,13 @@ const initFilters = () => {
                     </div>
                     <div class="field">
                         <label for="name">Nombre</label>
-                        <InputText id="name" v-model.trim="patient.name" required="true" autofocus :class="{ 'p-invalid': submitted && !patient.name }" />
+                        <InputText :disabled="disabledInput" id="name" v-model.trim="patient.name" required="true" autofocus :class="{ 'p-invalid': submitted && !patient.name }" />
                         <small class="p-invalid" v-if="submitted && !user.name">Nombre es requerido.</small>
                     </div>
 
                     <div class="field">
                         <label for="name">Apellidos</label>
-                        <InputText id="name" v-model.trim="patient.surnames" required="true" autofocus :class="{ 'p-invalid': submitted && !patient.surnames }" />
+                        <InputText :disabled="disabledInput" id="name" v-model.trim="patient.surnames" required="true" autofocus :class="{ 'p-invalid': submitted && !patient.surnames }" />
                         <small class="p-invalid" v-if="submitted && !patient.surnames">Apellido es requerido.</small>
                     </div>
                     <div class="formgrid grid">
@@ -387,7 +409,7 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteUserDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="user"
+                        <span v-if="patient"
                             >¿Estás seguro de que quieres eliminar <b>{{ patient.name }}</b
                             >?</span
                         >
@@ -401,7 +423,7 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteUsersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="user">¿Está seguro de que desea eliminar los usuarios seleccionados?</span>
+                        <span v-if="patient">¿Está seguro de que desea eliminar los usuarios seleccionados?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteUsersDialog = false" />
