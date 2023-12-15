@@ -48,6 +48,7 @@ export const searchbydni = (dni) => axios.get(`/patients/searchbydni/${dni}`);
 export const createappointment = (payload) => axios.post('/appointment', payload);
 export const getAppointmentId = (appointmentId) => axios.get(`/appointment/${appointmentId}`);
 export const getAppointmentUserId = (userId) => axios.get(`/appointment/user/${userId}`);
+export const getAppointmentDoctorId = (doctorId) => axios.get(`/appointment/doctor/${doctorId}`);
 export const getAppointment = () => axios.get(`/appointment`);
 export const deleteAppointment = (appointmentId) => axios.delete(`/appointment/${appointmentId}`);
 

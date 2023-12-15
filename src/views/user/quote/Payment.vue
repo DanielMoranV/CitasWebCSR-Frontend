@@ -64,6 +64,8 @@ onMounted(async () => {
 
 window.addEventListener('culqiTokenCreated', async (event) => {
     culqiToken.value = event.detail;
+    console.log(culqiToken.value);
+    culqiToken.value.metadata = {};
     culqiToken.value.metadata.appointmentId = dataAppointmentStore.appointment.appointmentId;
     culqiToken.value.metadata.paymentMethodId = 2;
     culqiToken.value.metadata.VoucherTypeId = 5;
@@ -74,6 +76,7 @@ window.addEventListener('culqiTokenCreated', async (event) => {
     culqiToken.value.client.phone = authStore.user.user.phone;
     culqiToken.value.client.name = authStore.user.user.name;
     culqiToken.value.client.surnames = authStore.user.user.surnames;
+    console.log(appointment.value);
     culqiToken.value.dataPayment = {
         nameDoctor: appointment.value.doctor.user.name + ' ' + appointment.value.doctor.user.surnames,
         specialty: appointment.value.doctor.specialization,
@@ -82,7 +85,7 @@ window.addEventListener('culqiTokenCreated', async (event) => {
         price: appointment.value.doctor.personalizedPrices[0].personalizedPrice
     };
 
-    // En este punto, culqiToken contiene el token y puedes manejarlo
+    //En este punto, culqiToken contiene el token y puedes manejarlo
     const response = await dataAppointmentStore.addPayment(culqiToken.value);
     if (response.message) {
         toast.add({ severity: 'error', summary: 'Error', detail: response.message, life: 4000 });
