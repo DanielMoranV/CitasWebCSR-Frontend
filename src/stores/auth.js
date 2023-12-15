@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto, searchbydni } from '../api';
+import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto } from '../api';
 import axios from 'axios';
 //import useResponse from '../composables/useResponse';
 export const useAuthStore = defineStore({
@@ -35,6 +35,7 @@ export const useAuthStore = defineStore({
         async searchbydni(dni) {
             try {
                 const data = await axios.get(`https://api-utilidades.serveo.net/api/v1/users/searchbydni/${dni}`);
+                //const data = await axios.get(`https://api-utilidades.serveo.net/api/v1/users/searchbydni/${dni}`);
                 return data.data.data;
             } catch (error) {
                 console.log(error);

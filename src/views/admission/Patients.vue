@@ -4,7 +4,8 @@ import { ref, onMounted, onBeforeMount, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
-import { dformat, dparse } from '../../utils/day';
+import { dformat, dparse, dparseFromFormat } from '../../utils/day';
+import { updateDependent } from '../../api';
 import * as XLSX from 'xlsx';
 
 const toast = useToast();
@@ -127,9 +128,10 @@ const validateRequiredFields = () => {
 };
 
 const updateUser = async () => {
+    console.log(patient.value);
     const payload = {
         address: patient.value.address,
-        birthDate: dparse(new Date(patient.value.birthDate)),
+        birthDate: dparse(patient.value.birthDate),
         civilStatus: patient.value.civilStatus,
         dni: patient.value.dni,
         documentType: patient.value.documentType,
@@ -145,24 +147,33 @@ const updateUser = async () => {
             roleId: 4
         }
     };
-
-    if (patient.value.accessId) {
+    if (patient.value.accessId || patient.value.dependentId) {
+        //payload.birthDate = dparseFromFormat(patient.value.birthDate, 'DD MMMM YYYY');
         const userIndex = listPatients.value.findIndex((item) => item.accessId === patient.value.accessId);
         if (userIndex !== -1) {
-            payload.access.accessId = patient.value.accessId;
-            payload.userId = patient.value.userId;
-
-            await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload);
-
+            if (patient.value.accessId) {
+                payload.access.accessId = patient.value.accessId;
+                payload.userId = patient.value.userId;
+                await dataUserStore.updatePatient(payload.dni, payload.access.accessId, payload);
+            }
+            if (patient.value.dependentId) {
+                payload.dependentId = patient.value.dependentId;
+                const { access, ...payloadDependent } = payload;
+                await updateDependent(patient.value.dependentId, payloadDependent);
+            }
+            patient.value.birthDate = dformat(patient.value.birthDate, 'DD MMMM YYYY');
             listPatients.value[userIndex] = patient.value;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Paciente Actualizado', life: 3000 });
         }
     } else {
         const dataUser = await dataUserStore.addUsers(payload);
+        console.log(dataUser);
+        console.log(listPatients.value);
         patient.value.accessId = dataUser.access[0].accessId;
         patient.value.status = 'offline';
+        patient.value.birthDate = dformat(patient.value.birthDate, 'DD MMMM YYYY');
         listPatients.value.push(patient.value);
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Registrado', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Paciente Registrado', life: 3000 });
     }
 
     userDialog.value = false;
@@ -172,14 +183,21 @@ const updateUser = async () => {
 
 const saveUser = async () => {
     submitted.value = true;
+    console.log(patient.value);
 
     if (validateRequiredFields()) {
+        console.log(patient.value);
         updateUser();
+        console.log(patient.value);
     }
 };
 
 const editUser = (editUser) => {
     patient.value = { ...editUser };
+    patient.value.birthDate = new Date(patient.value.birthDate);
+    console.log(patient.value);
+    console.log('editar paciente', dformat(patient.value.birthDate, 'DD/MM/YYYY'));
+
     userDialog.value = true;
 };
 
@@ -311,18 +329,19 @@ const initFilters = () => {
                             {{ slotProps.data.dni }}
                         </template>
                     </Column>
+                    <Column field="user.surnames" header="Apellidos" :sortable="true" headerStyle="width:20%; min-width:10rem;">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Apellidos</span>
+                            {{ slotProps.data.surnames }}
+                        </template>
+                    </Column>
                     <Column field="user.name" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Nombre</span>
                             {{ slotProps.data.name }}
                         </template>
                     </Column>
-                    <Column field="user.surnames" header="Apellidos" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Apellidos</span>
-                            {{ slotProps.data.surnames }}
-                        </template>
-                    </Column>
+
                     <Column field="roleName" header="Fecha de Nacimiento" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Fecha Nacimiento</span>
@@ -335,6 +354,7 @@ const initFilters = () => {
                             {{ slotProps.data.phone }}
                         </template>
                     </Column>
+
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editUser(slotProps.data)" />
@@ -370,7 +390,7 @@ const initFilters = () => {
                     <div class="field">
                         <label for="name">Nombre</label>
                         <InputText :disabled="disabledInput" id="name" v-model.trim="patient.name" required="true" autofocus :class="{ 'p-invalid': submitted && !patient.name }" />
-                        <small class="p-invalid" v-if="submitted && !user.name">Nombre es requerido.</small>
+                        <small class="p-invalid" v-if="submitted && !patient.name">Nombre es requerido.</small>
                     </div>
 
                     <div class="field">
@@ -382,7 +402,7 @@ const initFilters = () => {
                         <div class="field col">
                             <label for="birthDate">Fecha de Nacimiento</label>
                             <Calendar :showIcon="true" :showButtonBar="true" v-model="patient.birthDate" dateFormat="dd/mm/yy" required="true"></Calendar>
-                            <small class="p-invalid" v-if="submitted && !user.birthDate">Fecha de nacimiento es requerido.</small>
+                            <small class="p-invalid" v-if="submitted && !patient.birthDate">Fecha de nacimiento es requerido.</small>
                         </div>
                         <div class="field col">
                             <label for="phone">Teléfono</label>

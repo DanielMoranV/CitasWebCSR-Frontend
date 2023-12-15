@@ -29,6 +29,26 @@ const sexItems = ref([
 onBeforeMount(() => {
     initFilters();
 });
+watch([() => dependent.value.dni], async ([newDni]) => {
+    // También puedes acceder a newDni y realizar acciones según sea necesario
+    if (isValidDni(newDni) && dependent.value.documentType === 'DNI') {
+        searchByDNI(newDni);
+    }
+});
+
+const searchByDNI = async (dni) => {
+    const infoReniec = await authStore.searchbydni(dni);
+    if (!infoReniec) {
+        dependent.value.dni = '';
+        dependent.value.name = '';
+        dependent.value.surnames = '';
+        toast.add({ severity: 'error', summary: 'Error', detail: 'DNI no encontrado; intente nuevamente', life: 3000 });
+    } else {
+        dependent.value.name = infoReniec?.nombres || '';
+        dependent.value.surnames = infoReniec?.apellidop + ' ' + infoReniec?.apellidom;
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'DNI encontrado', life: 3000 });
+    }
+};
 onMounted(async () => {
     const userId = authStore.user.username;
     await dataUserStore.getUsersDependents(userId).then((data) => {
@@ -102,6 +122,7 @@ const saveDependent = async () => {
 };
 const editDependent = (editDependent) => {
     dependent.value = { ...editDependent };
+    dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
     dependentDialog.value = true;
 };
 

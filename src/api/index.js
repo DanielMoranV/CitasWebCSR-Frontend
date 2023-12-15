@@ -51,8 +51,21 @@ export const getAppointmentUserId = (userId) => axios.get(`/appointment/user/${u
 export const getAppointment = () => axios.get(`/appointment`);
 export const deleteAppointment = (appointmentId) => axios.delete(`/appointment/${appointmentId}`);
 
+// Caja Registradora
+export const getCashRegisters = () => axios.get('/cashregister');
+export const getCashRegister = (cashRegisterId) => axios.get(`/cashregister/${cashRegisterId}`);
+export const sumIngressAmountByCashRegisterId = (cashRegisterId) => axios.get(`/cashregister/sumIngressAmountByCashRegisterId/${cashRegisterId}`);
+export const createCashRegister = (payload) => axios.post('/cashregister', payload);
+export const createCashRegisterTransaction = (payload) => axios.post('/cashregister/cashregistertransaction', payload);
+export const updateCashRegister = (cashRegisterId, payload) => axios.put(`/cashregister/${cashRegisterId}`, payload);
+export const getTodayCashRegisterForAdmissionist = (admissionistId) => axios.get(`/cashregister/todayforadmissionist/${admissionistId}`);
+export const getPreviousCashRegisterForAdmissionist = (admissionistId) => axios.get(`/cashregister/previousforadmissionist/${admissionistId}`);
+export const getCashRegisterForAdmissionist = (admissionistId) => axios.get(`/cashregister/admissionist/${admissionistId}`);
+
 // Pagos
 export const createPayment = (payload) => axios.post('/payment', payload);
+export const createPaymentCash = (payload) => axios.post('/payment/cash', payload);
+export const getLastPayment = () => axios.get('/payment/lastpayment');
 
 // Qr Whastapp
 export const getQrWp = () => axios.get('imgqrwp/urlqr/qr.svg');

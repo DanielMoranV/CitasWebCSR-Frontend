@@ -118,10 +118,20 @@ const updateSchedule = async () => {
 
             // Envía newSchedule al servidor para guardarlo en la base de datos
             await dataDoctorStore.addDoctorSchedule(newSchedule);
-            console.log('Guardando horario:', newSchedule);
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dias y turnos de citas generados correctamente', life: 3000 });
         }
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dias y turnos de citas generados correctamente', life: 3000 });
     }
+    await dataDoctorStore.getDoctorSchedule(dataDoctor.value.user.Doctor.doctorId).then((data) => {
+        schedules.value = data.map((schedule) => {
+            let startTime = dformat(schedule.startTime, 'hh:mm A');
+            let endTime = dformat(schedule.endTime, 'hh:mm A');
+            let day = dformat(schedule.day, 'DD MMMM YYYY');
+            schedule.startTime = startTime;
+            schedule.endTime = endTime;
+            schedule.day = day;
+            return schedule;
+        });
+    });
 
     userDialog.value = false;
     schedule.value = {};

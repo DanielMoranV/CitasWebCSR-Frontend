@@ -34,7 +34,6 @@ export const useDataDoctorStore = defineStore({
         async getDoctors() {
             try {
                 const { data } = await apiGetDoctors();
-                console.log(data);
                 cache.setItem('doctors', data);
                 this.doctors = data;
                 return data;

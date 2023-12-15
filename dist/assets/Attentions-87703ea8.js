@@ -1,1 +1,0 @@
-import{_ as e,b as s,c,d as t}from"./index-16712e5a.js";const o={},n={className:"card"},a=t("h5",null,"Interfas Medico",-1),r=t("p",null,"Use this page to start from scratch and place your custom content.",-1),_=[a,r];function d(i,l){return s(),c("div",n,_)}const h=e(o,[["render",d]]);export{h as default};

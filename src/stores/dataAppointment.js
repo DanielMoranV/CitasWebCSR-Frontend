@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createPayment, createappointment, getAppointmentId, getAppointmentUserId, getAppointment, deleteAppointment } from '../api';
+import { createPayment, createappointment, getAppointmentId, getAppointmentUserId, getAppointment, deleteAppointment, getLastPayment, createPaymentCash } from '../api';
 
 export const useDataAppointmentStore = defineStore({
     id: 'appointment',
@@ -71,6 +71,27 @@ export const useDataAppointmentStore = defineStore({
                 return data;
             } catch (error) {
                 console.log(error);
+                return error;
+            }
+        },
+        async createPaymentCash(payload) {
+            try {
+                const { data } = await createPaymentCash(payload);
+                cache.setItem('payload', data);
+                this.payment = data;
+                return data;
+            } catch (error) {
+                console.log(error);
+                return error;
+            }
+        },
+        async getLastPayment() {
+            try {
+                const { data } = await getLastPayment();
+                this.payment = data;
+                return data;
+            } catch (error) {
+                console.log;
                 return error;
             }
         },

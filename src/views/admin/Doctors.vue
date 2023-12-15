@@ -103,7 +103,7 @@ const openNew = () => {
                 doctorId: null,
                 rne: null,
                 specialization: null,
-                status: null,
+                status: true,
                 userId: null,
                 personalizedPrices: [
                     {

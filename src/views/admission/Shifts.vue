@@ -1,19 +1,19 @@
 <script setup>
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { ref, onMounted, onBeforeMount, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { useDataAppointmentStore } from '../../stores/dataAppointment';
+import { useDataAdmissionistStore } from '../../stores/dataAdmissionist';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useAuthStore } from '../../stores/auth';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useToast } from 'primevue/usetoast';
 import { dformat } from '../../utils/day';
 
-const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 const dataUserStore = useDataUserStore();
 const dataDoctorStore = useDataDoctorStore();
+const dataAdmissionistStore = useDataAdmissionistStore();
 const dataAppointmentStore = useDataAppointmentStore();
 const listDoctors = ref([]);
 const appointmentLists = ref([]);
@@ -29,6 +29,7 @@ const patients = ref(null);
 const selectedPatient = ref(null);
 const autoFilteredPatientValue = ref([]);
 const buttonPaymentDisabled = ref(true);
+const todayCashRegister = ref(null);
 const paymentValues = ref({
     amount: null,
     paymentDate: null,
@@ -37,13 +38,10 @@ const paymentValues = ref({
     VoucherTypeId: null,
     userId: null
 });
-const culqiToken = ref(null);
 
 onBeforeMount(() => initFilters());
 
 const exportCSV = () => dt.value.exportCSV();
-
-const openNew = () => router.push('/listdoctor');
 
 const searchPatient = (event) => {
     const searchText = event.query.toLowerCase();
@@ -56,15 +54,6 @@ watch(selectedPatient, (newSelectedPatient) => {
 });
 
 onMounted(async () => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.culqi.com/js/v4';
-    script.async = true;
-    script.onload = () => {
-        // Una vez que el script de Culqi se haya cargado, configura Culqi.settings y CulqiOptions
-        Culqi.publicKey = 'pk_test_73e0f77c30643c37';
-        buttonPaymentDisabled.value = false;
-    };
-    document.body.appendChild(script);
     await dataDoctorStore.getDoctors().then((data) => {
         listDoctors.value = data.map((user) => {
             user.name = `${user.user.surnames} ${user.user.name}`;
@@ -80,6 +69,7 @@ onMounted(async () => {
     listPatients.value = await dataUserStore.getPatients();
     patients.value = formatPatientValues(listPatients.value);
     autoCompletePatients.value = false;
+    todayCashRegister.value = await dataAdmissionistStore.getTodayCashRegisterForAdmissionist(authStore.user.accessId);
 });
 
 const initFilters = () => {
@@ -101,75 +91,54 @@ const deleteeAppointmentId = async () => {
     appointment.value = {};
     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cita médica eliminada', life: 3000 });
 };
-const scheduleAppointment = (data) => {
-    appointment.value = data;
-    console.log(appointment.value);
-    displayScheduleAppointment.value = true;
-    buttonPaymentDisabled.value = true;
-    selectedPatient.value = null;
+const scheduleAppointment = async (data) => {
+    if (todayCashRegister.value !== null) {
+        appointment.value = data;
+        displayScheduleAppointment.value = true;
+        buttonPaymentDisabled.value = true;
+        selectedPatient.value = null;
+        console.log(appointment.value);
+    } else {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Caja registradora NO APERTURADA', life: 4000 });
+    }
 };
 
-const openPaymentMethodDigital = async () => {
-    const payload = createAppointmentPayload();
-    await dataAppointmentStore.addappointment(payload);
-    appointmentLists.value = await dataAppointmentStore.getAppointment();
-    formatAppointmentList();
-    paymentValues.value = {
-        amount: appointment.value.price,
-        paymentDate: new Date(),
-        appointmentId: dataAppointmentStore.appointment.appointmentId,
-        paymentMethodId: 2,
-        VoucherTypeId: 5,
-        userId: selectedPatient.value.userId
-    };
-    Culqi.settings({
-        title: 'CSR Consultas Web',
-        currency: 'PEN', // Este parámetro es requerido para realizar pagos yape
-        amount: paymentValues.value.amount * 100 // Este parámetro es requerido para realizar pagos yape
-        //order: 'ord_live_0CjjdWhFpEAZlxlz', // Este parámetro es requerido para realizar pagos con pagoEfectivo, billeteras y Cuotéalo
-        //xculqirsaid: 'Inserta aquí el id de tu llave pública RSA',
-        //rsapublickey: 'Inserta aquí tu llave pública RSA'
-    });
-
-    Culqi.open();
-};
 const openPaymentMethodCash = async () => {
     const payload = createAppointmentPayload();
-    await dataAppointmentStore.addappointment(payload);
+    let newAppointment = await dataAppointmentStore.addappointment(payload);
+    console.log(newAppointment.value);
     appointmentLists.value = await dataAppointmentStore.getAppointment();
     formatAppointmentList();
-};
-window.addEventListener('culqiTokenCreated', async (event) => {
-    culqiToken.value = event.detail;
-    culqiToken.value.metadata.appointmentId = paymentValues.value.appointmentId;
-    culqiToken.value.metadata.paymentMethodId = paymentValues.value.paymentMethodId;
-    culqiToken.value.metadata.VoucherTypeId = paymentValues.value.VoucherTypeId;
-    culqiToken.value.metadata.paymentDate = paymentValues.value.paymentDate;
-    culqiToken.value.metadata.userId = paymentValues.value.userId;
-    culqiToken.value.metadata.amount = paymentValues.value.amount * 100;
-    culqiToken.value.client.address = selectedPatient.value.address;
-    culqiToken.value.client.phone = selectedPatient.value.phone;
-    culqiToken.value.client.name = selectedPatient.value.name;
-    culqiToken.value.client.surnames = selectedPatient.value.surnames;
-    culqiToken.value.dataPayment = {
-        nameDoctor: appointment.value.nameDoctor,
-        specialty: appointment.value.specialization,
-        patient: selectedPatient.value.fullName,
-        date: dformat(appointment.value.orderlyTurn, 'DD MMMM YYYY hh:mm A'),
-        price: appointment.value.price
+    let lastPayment = await dataAppointmentStore.getLastPayment();
+    lastPayment = Number(lastPayment.paymentId) + 1;
+    paymentValues.value = {
+        amount: Number(appointment.value.price) * 100,
+        voucherNumber: '000' + lastPayment,
+        paymentDate: new Date(),
+        appointmentId: newAppointment.appointmentId,
+        paymentMethodId: 1,
+        VoucherTypeId: 5,
+        userId: newAppointment.userId,
+        admissionistId: authStore.user.accessId,
+        chargeId: null
+    };
+    console.log(paymentValues.value);
+    let newPaymentCash = await dataAppointmentStore.createPaymentCash(paymentValues.value);
+    let payloadCashRegister = {
+        transactionDate: new Date(),
+        transactionType: 'Ingreso',
+        amount: newPaymentCash.amount,
+        cashRegisterId: todayCashRegister.value.cashRegisterId,
+        voucherNumber: newPaymentCash.voucherNumber,
+        paymentId: newPaymentCash.paymentId,
+        category: 'Consultas Médicas'
     };
 
-    // En este punto, culqiToken contiene el token y puedes manejarlo
-    const response = await dataAppointmentStore.addPayment(culqiToken.value);
-    if (response.message) {
-        toast.add({ severity: 'error', summary: 'Error', detail: response.message, life: 4000 });
-        await dataAppointmentStore.deleteAppointmentId(appointment.value.Appointment[0].appointmentId);
-    } else {
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Pago realizado correctamente', life: 4000 });
-    }
-    Culqi.close();
+    console.log(payloadCashRegister);
+    await dataAdmissionistStore.createCashRegisterTransaction(payloadCashRegister);
     displayScheduleAppointment.value = false;
-});
+    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cita médica pagada correctamente', life: 3000 });
+};
 
 function formatAppointmentList() {
     appointmentLists.value.forEach((appointment) => {
@@ -246,11 +215,11 @@ function createAppointmentPayload() {
             <div class="card">
                 <Toast />
                 <Toolbar class="mb-4">
-                    <template v-slot:start>
+                    <!-- <template v-slot:start>
                         <div class="my-2">
                             <Button label="Agendar Cita Médica" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
                         </div>
-                    </template>
+                    </template> -->
 
                     <template v-slot:end>
                         <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
@@ -371,8 +340,7 @@ function createAppointmentPayload() {
                         </span>
                     </div>
 
-                    <Button label="Método de pago Efectivo" icon="pi pi-money-bill" class="p-button-default col-12 mb-2" :disabled="buttonPaymentDisabled" :loading="loading" @click="openPaymentMethodCash"></Button>
-                    <Button label="Método de pago Digital" icon="pi pi-credit-card" class="p-button-success col-12" :disabled="buttonPaymentDisabled" :loading="loading" @click="openPaymentMethodDigital"></Button>
+                    <Button label="Pagar Consulta Médica" icon="pi pi-money-bill" class="p-button-default col-12 mb-2" :disabled="buttonPaymentDisabled" :loading="loading" @click="openPaymentMethodCash"></Button>
                 </Dialog>
             </div>
         </div>

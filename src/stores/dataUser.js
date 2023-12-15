@@ -108,14 +108,11 @@ export const useDataUserStore = defineStore('datauserStore', {
         async addUsers(payload) {
             try {
                 const { data } = await createUser(payload);
-                await createAccessUser(payload.dni, { password: payload.dni, roleId: 4 });
                 this.dataUser = data;
                 return data;
             } catch (error) {
                 this.msg = error.message;
                 return this.msg;
-            } finally {
-                console.log('Finalizado');
             }
         },
         async updateUser(userId, accessId, doctorId, personalizedPriceId, payload) {
@@ -126,6 +123,16 @@ export const useDataUserStore = defineStore('datauserStore', {
                 await updateAccessId(accessId, access);
                 await apiUpdateDoctor(doctorId, dataDoctor);
                 await apiUpdatePersonalizedPrice(personalizedPriceId, personalizedPrices[0]);
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+        async updatePatient(userId, accessId, payload) {
+            try {
+                const { access, ...user } = payload;
+                console.log(userId, accessId, payload);
+                await updateUser(userId, user);
+                await updateAccessId(accessId, access);
             } catch (error) {
                 console.log(error.message);
             }
