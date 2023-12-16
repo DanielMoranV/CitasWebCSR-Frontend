@@ -76,7 +76,6 @@ window.addEventListener('culqiTokenCreated', async (event) => {
     culqiToken.value.client.phone = authStore.user.user.phone;
     culqiToken.value.client.name = authStore.user.user.name;
     culqiToken.value.client.surnames = authStore.user.user.surnames;
-    console.log(appointment.value);
     culqiToken.value.dataPayment = {
         nameDoctor: appointment.value.doctor.user.name + ' ' + appointment.value.doctor.user.surnames,
         specialty: appointment.value.doctor.specialization,

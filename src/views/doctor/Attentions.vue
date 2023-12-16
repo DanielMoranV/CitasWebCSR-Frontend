@@ -290,8 +290,7 @@ function createAppointmentPayload() {
                     </Column>
                     <Column headerStyle="width:10%; min-width:5rem;" header="Acciones">
                         <template #body="slotProps">
-                            <Button v-if="slotProps.data.status" icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2 mr-2" @click="confirmDelete(slotProps.data)" />
-                            <Button v-if="!slotProps.data.status" icon="pi pi-calendar-plus" class="p-button-rounded p-button-success mt-2" @click="scheduleAppointment(slotProps.data)" />
+                            <Button icon="pi pi-plus" class="p-button-rounded p-button-success mt-2" @click="scheduleAppointment(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>
