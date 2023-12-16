@@ -51,6 +51,7 @@ export const getAppointmentUserId = (userId) => axios.get(`/appointment/user/${u
 export const getAppointmentDoctorId = (doctorId) => axios.get(`/appointment/doctor/${doctorId}`);
 export const getAppointment = () => axios.get(`/appointment`);
 export const deleteAppointment = (appointmentId) => axios.delete(`/appointment/${appointmentId}`);
+export const updateAppointmentId = (appointmentId, payload) => axios.put(`/appointment/${appointmentId}`, payload);
 
 // Caja Registradora
 export const getCashRegisters = () => axios.get('/cashregister');
