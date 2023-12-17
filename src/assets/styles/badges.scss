@@ -15,6 +15,12 @@
         color: #256029;
     }
 
+    &.status-atendido {
+        background: #C8E6C9;
+        color: #256029;
+    }
+    
+
     &.status-offline {
         background: #FFCDD2;
         color: #C63737;
@@ -27,6 +33,11 @@
     }
 
     &.status-lowstock {
+        background: #FEEDAF;
+        color: #8A5340;
+    }
+    
+    &.status-disponible {
         background: #FEEDAF;
         color: #8A5340;
     }

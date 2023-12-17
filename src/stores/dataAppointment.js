@@ -1,12 +1,26 @@
 /* eslint-disable prettier/prettier */
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { createPayment, createappointment, getAppointmentId, getAppointmentUserId, getAppointment, deleteAppointment, getLastPayment, createPaymentCash, getAppointmentDoctorId } from '../api';
+import {
+    createPayment,
+    createappointment,
+    getAppointmentId,
+    getAppointmentUserId,
+    getAppointment,
+    deleteAppointment,
+    getLastPayment,
+    createPaymentCash,
+    getAppointmentDoctorId,
+    getAppointmentHistoryUserId,
+    createAppointmentHistory,
+    updateAppointmentHistory
+} from '../api';
 
 export const useDataAppointmentStore = defineStore({
     id: 'appointment',
     state: () => ({
         appointments: cache.getItem('appointments'),
+        appointmentHistory: cache.getItem('appointmentHistory'),
         appointment: cache.getItem('appointment'),
         payment: cache.getItem('payment'),
         msg: {},
@@ -31,6 +45,26 @@ export const useDataAppointmentStore = defineStore({
                 console.log(error);
             }
         },
+        async createAppointmentHistory(payload) {
+            try {
+                const { data } = await createAppointmentHistory(payload);
+                cache.setItem('appointmentHistory', data);
+                this.appointment = data;
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async updateAppointmentHistory(appointmentHistoryId, payload) {
+            try {
+                const { data } = await updateAppointmentHistory(appointmentHistoryId, payload);
+                cache.setItem('appointmentHistory', data);
+                this.appointment = data;
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
         async getAppointmentId(appointmentId) {
             try {
                 const { data } = await getAppointmentId(appointmentId);
@@ -45,6 +79,16 @@ export const useDataAppointmentStore = defineStore({
             try {
                 const { data } = await getAppointmentUserId(userId);
                 cache.setItem('appointments', data);
+                this.appointments = data;
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async getAppointmentHistoryUserId(userId) {
+            try {
+                const { data } = await getAppointmentHistoryUserId(userId);
+                cache.setItem('appointmentsHistory', data);
                 this.appointments = data;
                 return data;
             } catch (error) {

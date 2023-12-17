@@ -52,6 +52,9 @@ export const getAppointmentDoctorId = (doctorId) => axios.get(`/appointment/doct
 export const getAppointment = () => axios.get(`/appointment`);
 export const deleteAppointment = (appointmentId) => axios.delete(`/appointment/${appointmentId}`);
 export const updateAppointmentId = (appointmentId, payload) => axios.put(`/appointment/${appointmentId}`, payload);
+export const updateAppointmentHistory = (appointmentHistoryId, payload) => axios.put(`/appointment/appointmentHistory/${appointmentHistoryId}`, payload);
+export const createAppointmentHistory = (payload) => axios.post('/appointment/appointmenthistory', payload);
+export const getAppointmentHistoryUserId = (userId) => axios.get(`/appointment/appointmenthistory/${userId}`);
 
 // Caja Registradora
 export const getCashRegisters = () => axios.get('/cashregister');
