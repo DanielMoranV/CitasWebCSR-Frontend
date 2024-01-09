@@ -64,7 +64,7 @@ onMounted(async () => {
 
 window.addEventListener('culqiTokenCreated', async (event) => {
     culqiToken.value = event.detail;
-    console.log(culqiToken.value);
+
     culqiToken.value.metadata = {};
     culqiToken.value.metadata.appointmentId = dataAppointmentStore.appointment.appointmentId;
     culqiToken.value.metadata.paymentMethodId = 2;

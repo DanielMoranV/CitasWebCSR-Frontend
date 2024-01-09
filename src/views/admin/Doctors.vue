@@ -1,8 +1,9 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onBeforeMount, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
+import { useAuthStore } from '../../stores/auth';
 import { useDataUserStore } from '../../stores/dataUser';
 import { dformat, dparse } from '../../utils/day';
 import * as XLSX from 'xlsx';
@@ -12,10 +13,34 @@ import cache from '../../utils/cache';
 const router = useRouter();
 const toast = useToast();
 const dataDoctorStore = useDataDoctorStore();
+const authStore = useAuthStore();
 const dataUserStore = useDataUserStore();
 
 const users = ref(null);
-const user = ref({});
+const user = ref({
+    user: {
+        dni: null
+    }
+});
+watch([() => user.value.user.dni], async ([newDni]) => {
+    // También puedes acceder a newDni y realizar acciones según sea necesario
+    if (isValidDni(newDni) && user.value.user.documentType === 'DNI') {
+        searchByDNI(newDni);
+    }
+});
+const searchByDNI = async (dni) => {
+    const infoReniec = await authStore.searchbydni(dni);
+    if (!infoReniec) {
+        user.value.user.dni = '';
+        user.value.user.name = '';
+        user.value.user.surnames = '';
+        toast.add({ severity: 'error', summary: 'Error', detail: 'DNI no encontrado; intente nuevamente', life: 3000 });
+    } else {
+        user.value.user.name = infoReniec?.nombres || '';
+        user.value.user.surnames = infoReniec?.apellidop + ' ' + infoReniec?.apellidom;
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'DNI encontrado', life: 3000 });
+    }
+};
 const userDialog = ref(false);
 const priceDialog = ref(false);
 const deleteUserDialog = ref(false);
@@ -30,7 +55,6 @@ const sexItems = ref([
     { name: 'Femenino', code: 'Femenino' }
 ]);
 const nextSchedule = (dataDoctor) => {
-    dataDoctorStore.doctor = dataDoctor;
     cache.setItem('doctor', dataDoctor);
 
     router.push('/timetable');
@@ -168,23 +192,19 @@ const updateUser = async () => {
             payload.Doctor.doctorId = user.value.user.Doctor.doctorId;
             payload.Doctor.personalizedPrices[0].personalizedPriceId = user.value.user.Doctor.personalizedPrices[0].personalizedPriceId;
             payload.Doctor.personalizedPrices[0].doctorId = user.value.user.Doctor.doctorId;
-            console.log('user:', user.value);
-            console.log('payload', payload);
-            await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload.Doctor.doctorId, payload.Doctor.personalizedPrices[0].personalizedPriceId, payload);
+            await dataUserStore.updateDoctor(payload.dni, payload.access.accessId, payload.Doctor.doctorId, payload.Doctor.personalizedPrices[0].personalizedPriceId, payload);
 
             user.value.roleName = roleNames.value[user.value.roleId];
             users.value[userIndex] = user.value;
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Actualizado', life: 3000 });
         }
     } else {
-        console.log(payload);
         const dataUser = await dataUserStore.addUsers(payload);
-        console.log(dataUser);
+
         if (dataUser == 'Violación de la restricción única.') {
             toast.add({ severity: 'error', summary: 'Error', detail: 'DNI o CMP ya registrados, corregir', life: 3000 });
             return;
         } else {
-            console.log(dataUser.value);
             user.value.accessId = dataUser.access[0].accessId;
             user.value.roleName = roleNames.value[dataUser.access[0].roleId];
             user.value.status = 'offline';
@@ -194,7 +214,11 @@ const updateUser = async () => {
     }
 
     userDialog.value = false;
-    user.value = {};
+    user.value = {
+        user: {
+            dni: null
+        }
+    };
 };
 
 const saveUser = async () => {
@@ -208,7 +232,6 @@ const saveUser = async () => {
 };
 
 const editUser = (editUser) => {
-    console.log(editUser);
     user.value = { ...editUser };
     userDialog.value = true;
 };
@@ -222,12 +245,15 @@ const deleteUser = async () => {
     users.value = users.value.filter((val) => val.accessId !== user.value.accessId);
     await dataUserStore.disableUser(user.value.accessId);
     deleteUserDialog.value = false;
-    user.value = {};
+    user.value = {
+        user: {
+            dni: null
+        }
+    };
     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico deshabilitado', life: 3000 });
 };
 
 const exportCSV = () => {
-    console.log(dt.value);
     dt.value.exportCSV();
 };
 const onUpload = (event) => {

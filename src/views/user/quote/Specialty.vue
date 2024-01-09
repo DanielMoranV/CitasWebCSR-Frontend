@@ -18,7 +18,6 @@ async function fetchData() {
     const value = await fetchUsers();
     state.users = value.data;
     state.loading = false;
-    console.log('FECH', state.users[0].access[0].password);
 }
 
 // Observar cambios en la propiedad dataUser del store
@@ -59,7 +58,6 @@ onMounted(async () => {
     fetchData();
     await dataUserStore.getUsers();
     users.value = dataUserStore.dataUser;
-    console.log(users.value);
 });
 
 const initFilters1 = () => {

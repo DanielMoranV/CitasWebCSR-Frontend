@@ -9,7 +9,7 @@ import { getQrWp } from '../../api';
 const socket = io.connect(backendURL, { forceNew: true });
 const products = ref(null);
 
-const sessionStarted = ref(localStorage.getItem('sessionStarted') === 'true');
+const sessionStarted = ref(true);
 
 // URL de la imagen QR
 const qrImageUrl = ref('');
@@ -29,6 +29,7 @@ onMounted(async () => {
 
     getQrWp().then(({ url }) => (qrImageUrl.value = url));
     productService.getProductsSmall().then((data) => (products.value = data));
+    console.log(sessionStarted.value);
 });
 </script>
 
@@ -46,7 +47,7 @@ onMounted(async () => {
                     </div>
                 </div>
                 <div class="flex justify-content-center">
-                    <Image :v-if="sessionStarted" :src="qrImageUrl" alt="Image" width="250" />
+                    <Image v-if="!sessionStarted" :src="qrImageUrl" alt="Image" width="250" />
                 </div>
                 <div :class="sessionStarted ? 'text-green-500' : 'text-red-500'" class="font-medium text-xl">
                     {{ sessionStarted ? 'Sesión iniciada correctamente' : 'Whatsapp Offline' }}

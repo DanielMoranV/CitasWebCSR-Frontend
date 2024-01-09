@@ -61,7 +61,6 @@ const beforeUpload = (request) => {
 };
 const updateDataUser = async () => {
     loading.value = true;
-    console.log(dataUser);
     const payload = {
         birthDate: new Date(dparse(dataUser.birthDate)),
         email: dataUser.email,
@@ -76,7 +75,6 @@ const updateDataUser = async () => {
 };
 
 onMounted(async () => {
-    console.log(authStore.user.username);
     await authStore.currentUser(authStore.user.username);
     const userData = authStore.user.user;
     Object.assign(dataUser, userData);
@@ -84,10 +82,8 @@ onMounted(async () => {
     // Formatear Fecha y hora
     const birthDate = dformat(dataUser.birthDate, 'DD MMMM YYYY');
     dataUser.birthDate = birthDate;
-    console.log(dataUser);
     await authStore.getUrlProfilePhoto().then((url) => (urlProfilePhoto.value = url));
     urlUpdatePhotoProfile.value = `${backendURL}/api/v1/users/photoprofile/${dataUser.dni}`;
-    console.log(urlProfilePhoto.value);
 });
 </script>
 <template>

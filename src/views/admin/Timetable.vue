@@ -5,6 +5,7 @@ import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { dformat, dparse } from '../../utils/day';
+import cache from '../../utils/cache';
 //import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 
@@ -32,22 +33,32 @@ onBeforeMount(() => {
 });
 const filename = `listcolaborator-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
-    dataDoctor.value = await dataDoctorStore.doctor;
-    nameDoctor.value = dataDoctor.value.user.name + ' ' + dataDoctor.value.user.surnames;
-    // schedules.value = await dataDoctorStore.getDoctorSchedule(dataDoctor.value.user.Doctor.doctorId);
-    // console.log(schedules.value);
-
-    await dataDoctorStore.getDoctorSchedule(dataDoctor.value.user.Doctor.doctorId).then((data) => {
-        schedules.value = data.map((schedule) => {
-            let startTime = dformat(schedule.startTime, 'hh:mm A');
-            let endTime = dformat(schedule.endTime, 'hh:mm A');
-            let day = dformat(schedule.day, 'DD MMMM YYYY');
-            schedule.startTime = startTime;
-            schedule.endTime = endTime;
-            schedule.day = day;
-            return schedule;
-        });
-    });
+    dataDoctor.value = cache.getItem('doctor');
+    // Verificar si dataDoctor tiene datos antes de utilizarlo
+    if (dataDoctor.value !== null && dataDoctor.value !== undefined) {
+        // Accede a los datos y realiza las operaciones necesarias
+        nameDoctor.value = dataDoctor.value.user.name + ' ' + dataDoctor.value.user.surnames;
+        // Verificar si dataDoctor.value.user.Doctor existe antes de acceder a sus propiedades
+        if (dataDoctor.value.user.Doctor) {
+            await dataDoctorStore.getDoctorSchedule(dataDoctor.value.user.Doctor.doctorId).then((data) => {
+                schedules.value = data.map((schedule) => {
+                    let startTime = dformat(schedule.startTime, 'hh:mm A');
+                    let endTime = dformat(schedule.endTime, 'hh:mm A');
+                    let day = dformat(schedule.day, 'DD MMMM YYYY');
+                    schedule.startTime = startTime;
+                    schedule.endTime = endTime;
+                    schedule.day = day;
+                    return schedule;
+                });
+            });
+        } else {
+            // Manejar el caso en el que dataDoctor.value.user.Doctor no existe
+            console.error('No se encontraron datos del doctor en dataDoctor.');
+        }
+    } else {
+        // Manejar el caso en el que dataDoctor no tiene datos
+        console.error('No se encontraron datos en dataDoctor.');
+    }
 });
 
 const openNew = () => {
@@ -90,9 +101,6 @@ const validateRequiredFields = () => {
 };
 
 const updateSchedule = async () => {
-    console.log(schedule.value);
-    console.log(daysSchedule.value);
-
     if (schedule.value.scheduleId) {
         // const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
         // if (userIndex !== -1) {

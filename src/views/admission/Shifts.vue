@@ -49,7 +49,6 @@ const searchPatient = (event) => {
 };
 
 watch(selectedPatient, (newSelectedPatient) => {
-    console.log(newSelectedPatient);
     if (newSelectedPatient != null) buttonPaymentDisabled.value = false;
 });
 
@@ -81,7 +80,6 @@ const initFilters = () => {
 };
 const confirmDelete = (data) => {
     appointment.value = data;
-    console.log(appointment.value);
     deleteAppointmentDialog.value = true;
 };
 
@@ -97,7 +95,6 @@ const scheduleAppointment = async (data) => {
         displayScheduleAppointment.value = true;
         buttonPaymentDisabled.value = true;
         selectedPatient.value = null;
-        console.log(appointment.value);
     } else {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Caja registradora NO APERTURADA', life: 4000 });
     }
@@ -106,7 +103,7 @@ const scheduleAppointment = async (data) => {
 const openPaymentMethodCash = async () => {
     const payload = createAppointmentPayload();
     let newAppointment = await dataAppointmentStore.addappointment(payload);
-    console.log(newAppointment.value);
+
     appointmentLists.value = await dataAppointmentStore.getAppointment();
     formatAppointmentList();
     let lastPayment = await dataAppointmentStore.getLastPayment();
@@ -122,7 +119,7 @@ const openPaymentMethodCash = async () => {
         admissionistId: authStore.user.accessId,
         chargeId: null
     };
-    console.log(paymentValues.value);
+
     let newPaymentCash = await dataAppointmentStore.createPaymentCash(paymentValues.value);
     let payloadCashRegister = {
         transactionDate: new Date(),
@@ -134,7 +131,6 @@ const openPaymentMethodCash = async () => {
         category: 'Consultas Médicas'
     };
 
-    console.log(payloadCashRegister);
     await dataAdmissionistStore.createCashRegisterTransaction(payloadCashRegister);
     displayScheduleAppointment.value = false;
     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cita médica pagada correctamente', life: 3000 });

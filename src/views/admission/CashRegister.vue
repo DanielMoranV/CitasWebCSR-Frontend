@@ -24,7 +24,6 @@ const newCashRegister = async () => {
     todayCashRegister.value = await dataAdmissionistStore.createCashRegister(payload);
     disabledBtnNewRegister.value = true;
     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Registro de caja aperturado', life: 3000 });
-    console.log(todayCashRegister.value);
 };
 const currencyFormat = (valor) => {
     valor = valor / 100;

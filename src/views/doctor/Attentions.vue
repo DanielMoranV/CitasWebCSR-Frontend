@@ -29,7 +29,6 @@ onBeforeMount(() => initFilters());
 const exportCSV = () => dt.value.exportCSV();
 
 watch(selectedPatient, (newSelectedPatient) => {
-    console.log(newSelectedPatient);
     if (newSelectedPatient != null) buttonPaymentDisabled.value = false;
 });
 
@@ -40,7 +39,6 @@ onMounted(async () => {
             return user;
         });
     });
-    console.log(authStore.user.user.Doctor.doctorId);
     appointmentLists.value = await dataAppointmentStore.getAppointmentDoctorId(authStore.user.user.Doctor.doctorId);
     formatAppointmentList();
 
@@ -55,7 +53,6 @@ const initFilters = () => {
     };
 };
 const medicalRecord = (data) => {
-    console.log(data);
     cache.setItem('appointment', data);
     router.push('/patientcare');
 };

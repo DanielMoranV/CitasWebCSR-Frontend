@@ -9,6 +9,28 @@ import { backendURL } from '../../config';
 const router = useRouter();
 const dataDoctorStore = useDataDoctorStore();
 const { layoutConfig } = useLayout();
+const responsiveOptions = ref([
+    {
+        breakpoint: '1400px',
+        numVisible: 2,
+        numScroll: 1
+    },
+    {
+        breakpoint: '1199px',
+        numVisible: 3,
+        numScroll: 1
+    },
+    {
+        breakpoint: '767px',
+        numVisible: 2,
+        numScroll: 1
+    },
+    {
+        breakpoint: '575px',
+        numVisible: 1,
+        numScroll: 1
+    }
+]);
 
 const smoothScroll = (id) => {
     document.querySelector(id).scrollIntoView({
@@ -97,27 +119,24 @@ onMounted(async () => {
                         <h2 class="text-900 font-normal mb-2">Nuestros médicos</h2>
                         <span class="text-600 text-2xl">Contamos con los mejores profesionales para cuidar de ti y tu familia. ¡Agenda una cita hoy mismo!</span>
                     </div>
-
-                    <div v-for="doctor in infoDoctors" :key="doctor.cmp" class="col-12 md:col-12 lg:col-3 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
-                        <div
-                            style="height: 470px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)), linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2))"
-                        >
-                            <div class="p-3 surface-card h-full" style="border-radius: 8px">
-                                <div class="content-center center-container mb-2">
-                                    <div class="round-container">
-                                        <img :src="doctor.urlProfilePhoto" alt="Descripción de la imagen" />
+                    <Carousel :value="infoDoctors" :numVisible="3" :numScroll="1" :responsiveOptions="responsiveOptions" :autoplayInterval="3000">
+                        <template #item="slotProps">
+                            <div class="border-1 surface-border border-round m-2 text-center py-5 px-3">
+                                <div class="mb-3">
+                                    <img :src="slotProps.data.urlProfilePhoto" :alt="slotProps.data.medico" class="w-2 sm:w-6 shadow-2 profile-img" />
+                                </div>
+                                <div>
+                                    <h4 class="mb-1">{{ slotProps.data.medico }}</h4>
+                                    <h6 class="mt-0 mb-1">{{ slotProps.data.specialization }}</h6>
+                                    <h6 class="mt-0 mb-3">CMP: {{ slotProps.data.cmp }}</h6>
+                                    <h6 class="mt-0 mb-3">Consulta Médica S./ {{ slotProps.data.price }}.00</h6>
+                                    <div class="mt-5 flex align-items-center justify-content-center gap-2">
+                                        <Button label="Agendar Cita" icon="fa-solid fa-user-doctor text-2xl text-white-700" class="col-8 p-button-success mr-2 mb-2" @click="appointment(slotProps.data.cmp)"></Button>
                                     </div>
                                 </div>
-
-                                <Button label="Agendar Cita" icon="fa-solid fa-user-doctor text-2xl text-white-700" class="col-12 p-button-success mr-2 mb-2" @click="appointment(doctor.cmp)"></Button>
-
-                                <h5 class="mb-2 text-900">{{ doctor.medico }}</h5>
-                                <p class="text-600">CMP : {{ doctor.cmp }}</p>
-                                <span class="text-600">Especialidad : {{ doctor.specialization }}</span>
-                                <p class="text-600">Consulta Médica : S/ {{ doctor.price }}</p>
                             </div>
-                        </div>
-                    </div>
+                        </template>
+                    </Carousel>
                 </div>
             </div>
             <div id="features" class="py-4 px-4 lg:px-8 mt-5 mx-0 lg:mx-8">
@@ -380,23 +399,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.center-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.round-container {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
+.profile-img {
+    height: 15rem;
     overflow: hidden;
 }
 
-.round-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ajusta el comportamiento de la imagen para cubrir el contenedor */
-}
 /* #hero {
     background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, #eeefaf 0%, #c3e3fa 100%);
     height: 700px;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto } from '../api';
+import { sigin, currentUser, updateAccessUser, updateUser, urlProfilePhoto, searchbydni } from '../api';
 import axios from 'axios';
 //import useResponse from '../composables/useResponse';
 export const useAuthStore = defineStore({
@@ -17,7 +17,7 @@ export const useAuthStore = defineStore({
     getters: {
         hasRole: (state) => (roles) => {
             if (!state.user || !state.user.role) return false;
-            return roles.includes(state.user.role);
+            return roles.includes(state.user.role.name);
         },
         getEsential(state) {
             return {
@@ -34,9 +34,10 @@ export const useAuthStore = defineStore({
     actions: {
         async searchbydni(dni) {
             try {
-                const data = await axios.get(`https://api-utilidades.serveo.net/api/v1/users/searchbydni/${dni}`);
                 //const data = await axios.get(`https://api-utilidades.serveo.net/api/v1/users/searchbydni/${dni}`);
-                return data.data.data;
+                //return data.data.data;
+                const data = await searchbydni(dni);
+                return data.data;
             } catch (error) {
                 console.log(error);
             }
@@ -108,7 +109,6 @@ export const useAuthStore = defineStore({
                 const namePhoto = this.user.user.photo;
                 const { url } = await urlProfilePhoto(namePhoto);
                 this.urlProfilePhoto = url;
-                console.log(url);
                 return url;
             } catch (error) {
                 console.log(error);

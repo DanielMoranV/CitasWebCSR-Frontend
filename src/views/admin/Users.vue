@@ -1,16 +1,22 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onBeforeMount, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
+import { useAuthStore } from '../../stores/auth';
 import { dformat, dparse } from '../../utils/day';
 import * as XLSX from 'xlsx';
 
 const toast = useToast();
 const dataUserStore = useDataUserStore();
+const authStore = useAuthStore();
 
 const users = ref(null);
-const user = ref({});
+const user = ref({
+    user: {
+        dni: null
+    }
+});
 const userDialog = ref(false);
 const deleteUserDialog = ref(false);
 const deleteUsersDialog = ref(false);
@@ -27,6 +33,25 @@ const roleItems = ref([
     { name: 'Admisionista', code: 2 }
 ]);
 
+watch([() => user.value.user.dni], async ([newDni]) => {
+    // También puedes acceder a newDni y realizar acciones según sea necesario
+    if (isValidDni(newDni) && user.value.user.documentType === 'DNI') {
+        searchByDNI(newDni);
+    }
+});
+const searchByDNI = async (dni) => {
+    const infoReniec = await authStore.searchbydni(dni);
+    if (!infoReniec) {
+        user.value.user.dni = '';
+        user.value.user.name = '';
+        user.value.user.surnames = '';
+        toast.add({ severity: 'error', summary: 'Error', detail: 'DNI no encontrado; intente nuevamente', life: 3000 });
+    } else {
+        user.value.user.name = infoReniec?.nombres || '';
+        user.value.user.surnames = infoReniec?.apellidop + ' ' + infoReniec?.apellidom;
+        toast.add({ severity: 'success', summary: 'Éxito', detail: 'DNI encontrado', life: 3000 });
+    }
+};
 const roleNames = ref({
     1: 'Administrador',
     2: 'Admisionista'
@@ -64,7 +89,6 @@ onMounted(async () => {
             return user;
         });
     });
-    console.log(users.value);
 });
 
 const openNew = () => {
@@ -148,7 +172,11 @@ const updateUser = async () => {
     }
 
     userDialog.value = false;
-    user.value = {};
+    user.value = {
+        user: {
+            dni: null
+        }
+    };
     submitted.value = false;
 };
 
@@ -174,7 +202,11 @@ const deleteUser = async () => {
     users.value = users.value.filter((val) => val.accessId !== user.value.accessId);
     await dataUserStore.disableUser(user.value.accessId);
     deleteUserDialog.value = false;
-    user.value = {};
+    user.value = {
+        user: {
+            dni: null
+        }
+    };
     toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
 };
 
@@ -337,7 +369,7 @@ const initFilters = () => {
                     </div>
                     <div class="field">
                         <label for="dni">{{ user.user.documentType }}</label>
-                        <InputText id="name" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': (submitted && !user.user.dni) || !isValidDni(user.user.dni) }" />
+                        <InputText id="dni" v-model.trim="user.user.dni" required="true" autofocus :class="{ 'p-invalid': (submitted && !user.user.dni) || !isValidDni(user.user.dni) }" />
                         <small class="p-invalid" v-if="(submitted && !user.user.dni) || !isValidDni(user.user.dni)">{{ user.user.documentType }} es requerido o formato inválido</small>
                     </div>
                     <div class="field">

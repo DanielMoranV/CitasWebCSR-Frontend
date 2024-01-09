@@ -116,7 +116,6 @@ const signinUser = async () => {
     }
 
     loading.value = true;
-    console.log(dataUser);
 
     await dataUserStore.addPatients(dataUser);
 
@@ -131,9 +130,7 @@ const signinUser = async () => {
         password: dataUser.dni
     };
 
-    console.log(loginUser);
     await authStore.login(loginUser);
-    console.log('mensaje user', dataUserStore.msg);
 
     if (authStore.sessionUser) {
         showToast('success', 'Validación Correcta Bienvenido', 3000);

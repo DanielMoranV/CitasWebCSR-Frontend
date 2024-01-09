@@ -25,7 +25,6 @@ const openNew = () => {
     router.push('/listdoctor');
 };
 const medicalRecord = (data) => {
-    console.log(data);
     attention.value = data;
     visibleInfo.value = true;
 };
@@ -40,18 +39,20 @@ onMounted(async () => {
             appointment.patient = `${appointment.user.name} ${appointment.user.surnames}`;
         }
         if (appointment.appointmentHistories.length >= 1) {
-            console.log(appointment.appointmentHistories);
             appointment.reason = appointment.appointmentHistories[0].reason;
             appointment.treatment = appointment.appointmentHistories[0].treatment;
             appointment.diagnosis = appointment.appointmentHistories[0].diagnosis;
         }
     });
-    console.log(appointmentLists.value);
 });
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
+};
+const dialogContent = ref(null);
+const print = () => {
+    window.print();
 };
 </script>
 
@@ -135,18 +136,34 @@ const initFilters = () => {
                         </template>
                     </Column>
                 </DataTable>
-                <Dialog v-model:visible="visibleInfo" modal header="Información de la consulta" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-                    <h6>Motivo de la consulta:</h6>
-                    <p>{{ attention.reason }}</p>
-                    <h6>Diágnostico:</h6>
-                    <p>{{ attention.diagnosis }}</p>
-                    <h6>Tratamiento:</h6>
-                    <p>{{ attention.treatment }}</p>
+                <Dialog v-model:visible="visibleInfo" modal header="Header" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+                    <template #header>
+                        <div class="inline-flex align-items-center justify-content-center gap-2">
+                            <Avatar image="/layout/images/logo-dark.svg" class="custom-avatar-size" />
+                        </div>
+                    </template>
+                    <h4 class="font-bold white-space-nowrap">Detalle de consulta Médica</h4>
+                    <div ref="dialogContent">
+                        <h6>Paciente: {{ attention.user.name + ' ' + attention.user.surnames }}</h6>
+                        <h6>Médico: {{ attention.nameDoctor }}</h6>
+                        <h6>Motivo de la consulta:</h6>
+                        <p>{{ attention.reason }}</p>
+                        <h6>Diagnóstico:</h6>
+                        <p>{{ attention.diagnosis }}</p>
+                        <h6>Tratamiento:</h6>
+                        <p>{{ attention.treatment }}</p>
+                        <h6>Fecha: {{ dformat(attention.timeSlot.orderlyTurn, 'DD MMMM YYYY hh:mm a') }}</h6>
+                    </div>
+                    <Button icon="pi pi-print" class="p-button-rounded p-button-success mt-4" @click="print()" />
                 </Dialog>
             </div>
         </div>
     </div>
 </template>
 <style scoped lang="scss">
+.custom-avatar-size {
+    width: 200px; /* Puedes ajustar el tamaño según tus necesidades */
+    height: 64px;
+}
 @import '@/assets/styles/badges.scss';
 </style>

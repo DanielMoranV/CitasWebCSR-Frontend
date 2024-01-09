@@ -42,7 +42,6 @@ const login = async () => {
                 toast.add({ severity: 'warn', summary: 'Error de contraseña', life: 3000 });
                 break;
             default:
-                console.log('defecto', authStore.msg);
                 toast.add({ severity: 'error', summary: 'Ocurrió un error en el servidor intentelo más tarde.', life: 3000 });
                 break;
         }

@@ -32,7 +32,6 @@ const openNew = () => {
 };
 const updateAttention = (data) => {
     attention.value = data;
-    console.log(attention.value);
     submitted.value = false;
     appointmentHistoryDialog.value = true;
 };
@@ -52,7 +51,6 @@ const saveAppointmentHistory = async () => {
     if (attention.value.appointmentHistoryId) {
         const userIndex = appointmentHistory.value.findIndex((item) => item.appointmentHistoryId === attention.value.appointmentHistoryId);
         if (userIndex !== -1) {
-            console.log('payload', payload);
             await dataAppointmentStore.updateAppointmentHistory(attention.value.appointmentHistoryId, payload);
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Detalle de Atención Actualizado', life: 3000 });
         }
@@ -71,7 +69,6 @@ const saveAppointmentHistory = async () => {
 onBeforeMount(() => initFilters());
 
 onMounted(async () => {
-    console.log(dataAppointmentStore.appointment);
     doctor.value = (await dataAuthStore.user.user.name) + ' ' + dataAuthStore.user.user.surnames;
     appointment.value = await dataAppointmentStore.appointment;
     appointment.value.userId = await appointment.value.Appointment[0].user.userId;
@@ -79,16 +76,12 @@ onMounted(async () => {
         appointmentHistory.value = data.map((attention) => {
             attention.date = dformat(attention.appointment.timeSlot.orderlyTurn, 'DD MMMM YYYY');
             attention.doctor = attention.doctor.user.name + ' ' + attention.doctor.user.surnames;
-            console.log(attention.appointmentId);
             return attention;
         });
     });
-    console.log(appointment.value.appointmentId);
-    console.log(appointmentHistory.value);
 
     const existeEnHistorial = appointmentHistory.value.some((historialItem) => historialItem.appointmentId === appointment.value.appointmentId);
     disabledNew.value = existeEnHistorial;
-    console.log(existeEnHistorial);
 });
 
 const initFilters = () => {

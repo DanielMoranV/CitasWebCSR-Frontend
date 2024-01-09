@@ -94,7 +94,6 @@ onMounted(async () => {
         currentUser.accessId = user.accessId;
         listPatients.value.push(currentUser);
     });
-    console.log(listPatients.value);
 });
 
 const openNew = () => {
@@ -128,7 +127,6 @@ const validateRequiredFields = () => {
 };
 
 const updateUser = async () => {
-    console.log(patient.value);
     const payload = {
         address: patient.value.address,
         birthDate: dparse(patient.value.birthDate),
@@ -167,8 +165,6 @@ const updateUser = async () => {
         }
     } else {
         const dataUser = await dataUserStore.addUsers(payload);
-        console.log(dataUser);
-        console.log(listPatients.value);
         patient.value.accessId = dataUser.access[0].accessId;
         patient.value.status = 'offline';
         patient.value.birthDate = dformat(patient.value.birthDate, 'DD MMMM YYYY');
@@ -183,21 +179,15 @@ const updateUser = async () => {
 
 const saveUser = async () => {
     submitted.value = true;
-    console.log(patient.value);
 
     if (validateRequiredFields()) {
-        console.log(patient.value);
         updateUser();
-        console.log(patient.value);
     }
 };
 
 const editUser = (editUser) => {
     patient.value = { ...editUser };
     patient.value.birthDate = new Date(patient.value.birthDate);
-    console.log(patient.value);
-    console.log('editar paciente', dformat(patient.value.birthDate, 'DD/MM/YYYY'));
-
     userDialog.value = true;
 };
 
@@ -207,7 +197,6 @@ const confirmDeleteUser = (editUser) => {
 };
 
 const deleteUser = async () => {
-    console.log(patient.value);
     if (patient.value.accessId == undefined) {
         listPatients.value = listPatients.value.filter((val) => val.dni !== patient.value.dni);
         await dataUserStore.deleteUserDependents(patient.value.dependentId);
@@ -216,7 +205,6 @@ const deleteUser = async () => {
         await dataUserStore.disableUser(patient.value.accessId);
     }
 
-    console.log(patient.value);
     deleteUserDialog.value = false;
     patient.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });

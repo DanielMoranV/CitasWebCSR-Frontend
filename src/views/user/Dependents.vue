@@ -105,7 +105,7 @@ const saveDependent = async () => {
             }
         } else {
             const dataDependent = await dataUserStore.addUsersDependents(dependent.value);
-            console.log(dataDependent);
+
             if (dataDependent.dependentId) {
                 dependent.value.dependentId = dataDependent.dependentId;
                 dependent.value.birthDate = dformat(dependent.value.birthDate, 'DD MMMM YYYY');
