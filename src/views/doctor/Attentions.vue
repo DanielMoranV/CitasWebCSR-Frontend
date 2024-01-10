@@ -46,14 +46,16 @@ onMounted(async () => {
 });
 
 const initFilters = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         nameDoctor: { value: null, matchMode: FilterMatchMode.IN },
-        orderlyTurn: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] }
+        orderlyTurn: { operator: FilterOperator.AND, constraints: [{ value: today, matchMode: FilterMatchMode.DATE_IS }] }
     };
 };
 const medicalRecord = (data) => {
-    cache.setItem('appointment', data);
+    dataAppointmentStore.$state.appointment = data;
     router.push('/patientcare');
 };
 
@@ -155,7 +157,7 @@ function formatAppointmentList() {
                     </Column>
                     <Column headerStyle="width:10%; min-width:5rem;" header="Acciones">
                         <template #body="slotProps">
-                            <Button icon="pi pi-list" class="p-button-rounded p-button-success mt-2" @click="medicalRecord(slotProps.data)" />
+                            <Button v-if="slotProps.data.patient" icon="pi pi-list" class="p-button-rounded p-button-success mt-2" @click="medicalRecord(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>

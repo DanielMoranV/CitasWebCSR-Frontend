@@ -44,10 +44,10 @@ onMounted(async () => {
                 schedules.value = data.map((schedule) => {
                     let startTime = dformat(schedule.startTime, 'hh:mm A');
                     let endTime = dformat(schedule.endTime, 'hh:mm A');
-                    let day = dformat(schedule.day, 'DD MMMM YYYY');
+                    //let day = dformat(schedule.day, 'DD MMMM YYYY');
                     schedule.startTime = startTime;
                     schedule.endTime = endTime;
-                    schedule.day = day;
+                    //schedule.day = day;
                     return schedule;
                 });
             });
@@ -292,7 +292,7 @@ const initFilters = () => {
                     <Column field="day" header="Día" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Día</span>
-                            {{ slotProps.data.day }}
+                            {{ dformat(slotProps.data.day, 'DD MMMM YYYY') }}
                         </template>
                     </Column>
                     <Column field="startTime" header="Inicio" :sortable="true" headerStyle="width:14%; min-width:10rem;">
