@@ -51,6 +51,7 @@ onMounted(async () => {
                     return schedule;
                 });
             });
+            console.log(schedules.value);
         } else {
             // Manejar el caso en el que dataDoctor.value.user.Doctor no existe
             console.error('No se encontraron datos del doctor en dataDoctor.');
@@ -133,10 +134,8 @@ const updateSchedule = async () => {
         schedules.value = data.map((schedule) => {
             let startTime = dformat(schedule.startTime, 'hh:mm A');
             let endTime = dformat(schedule.endTime, 'hh:mm A');
-            let day = dformat(schedule.day, 'DD MMMM YYYY');
             schedule.startTime = startTime;
             schedule.endTime = endTime;
-            schedule.day = day;
             return schedule;
         });
     });
@@ -269,6 +268,7 @@ const initFilters = () => {
                     :value="schedules"
                     v-model:selection="selectedUsers"
                     dataKey="schedulesId"
+                    selectionMode="single"
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
@@ -313,10 +313,18 @@ const initFilters = () => {
                             {{ slotProps.data.capacity }}
                         </template>
                     </Column>
+                    <Column field="availableSchedule" header="Habilitado" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Habilitado</span>
+                            <InputSwitch v-model="slotProps.data.availableSchedule" />
+                        </template>
+                    </Column>
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editUser(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteUser(slotProps.data)" />
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-primary mr-2" @click="editUser(slotProps.data)" />
+                            <Button v-if="slotProps.data.availableSchedule" icon="pi pi-ban" class="p-button-rounded p-button-warning mt-2 mr-2" @click="confirmDisableUser(slotProps.data)" />
+                            <Button v-if="!slotProps.data.availableSchedule" icon="pi pi-check" class="p-button-rounded p-button-success mt-2 mr-2" @click="confirmEnableUser(slotProps.data)" />
+                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDeleteUser(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>
