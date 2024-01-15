@@ -45,11 +45,13 @@ export const useAuthStore = defineStore({
         async login(payload) {
             try {
                 const { data } = await sigin(payload);
+                console.log(data);
                 cache.setItem('user', data);
                 this.user = data;
                 this.sessionUser = true;
                 this.role = this.user.role.name;
             } catch (error) {
+                console.log(error);
                 this.msg = error.message;
                 this.user = null;
                 this.sessionUser = false;

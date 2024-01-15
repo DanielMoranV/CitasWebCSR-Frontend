@@ -180,23 +180,6 @@ const exportCSV = () => {
     console.log(dt.value);
     dt.value.exportCSV();
 };
-// const exportToExcel = () => {
-//     // Obtén los datos de la tabla
-//     const data = dt.value.value.map((row) => ({ ...row }));
-
-//     // Crea una hoja de cálculo a partir de los datos
-//     const worksheet = XLSX.utils.json_to_sheet(data);
-
-//     // Crea un libro de trabajo y añade la hoja de cálculo
-//     const workbook = XLSX.utils.book_new();
-//     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-//     // Escribe el libro de trabajo a un archivo Excel
-//     const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-
-//     // Guarda el archivo en el sistema del cliente
-//     saveAs(new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`);
-// };
 
 const onUpload = (event) => {
     const file = event.files[0];
@@ -398,18 +381,25 @@ const initFilters = () => {
                     </template>
                 </Dialog>
                 <Dialog v-model:visible="timeSlotDialog" :style="{ width: '500px' }" header="Turnos de consulta" :modal="true" class="p-fluid">
+                    <h5>{{ dformat(schedule.day, 'DD MMMM YYYY') }}</h5>
                     <DataTable :value="schedule.timeSlot" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 25rem">
                         <Column field="nTurn" header="Turno" style="width: 5%"></Column>
-                        <Column field="orderlyTurn" header="Fecha" style="width: 45%">
+                        <Column field="orderlyTurn" header="Hora" style="width: 20%">
                             <template #body="slotProps">
                                 <span class="p-column-title">Turno</span>
-                                {{ dformat(slotProps.data.orderlyTurn, 'DD MMMM YYYY') }}
+                                {{ dformat(slotProps.data.orderlyTurn, 'hh:mm a') }}
                             </template>
                         </Column>
-                        <Column field="availableTurn" header="Estado" style="width: 50%">
+                        <Column field="availableTurn" header="Estado" style="width: 30%">
                             <template #body="slotProps">
                                 <span class="p-column-title">Estado</span>
                                 {{ slotProps.data.availableTurn ? 'Libre' : 'En Consulta' }}
+                            </template>
+                        </Column>
+                        <Column field="availableTurn" header="Estado" style="width: 25%">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Estado</span>
+                                <InputSwitch v-model="slotProps.data.availableTurn" @change="confirmAvailableSchedule(slotProps.data)" />
                             </template>
                         </Column>
                     </DataTable>

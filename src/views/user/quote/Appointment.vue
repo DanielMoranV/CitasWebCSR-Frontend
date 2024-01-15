@@ -48,6 +48,7 @@ const formattedDate = computed(() => {
 
 // Función que se ejecutará cuando date cambie
 const handleDateChange = (newDate) => {
+    console.log(newDate);
     // Realiza alguna acción en respuesta al cambio de fecha
     const formattedNewDate = dformat(newDate, 'YYYY-MM-DD');
     // Filtra los elementos de schedule.value que coincidan con la nueva fecha
@@ -55,6 +56,7 @@ const handleDateChange = (newDate) => {
         const itemDate = dformat(new Date(item.day), 'YYYY-MM-DD');
         return itemDate === formattedNewDate;
     });
+    console.log(filteredSchedules);
 
     // Ahora, filteredSchedules contiene los elementos de schedule.value que coinciden con la nueva fecha
     const timeSlotValues = [];
@@ -64,6 +66,8 @@ const handleDateChange = (newDate) => {
             name: dformat(slot.orderlyTurn, 'hh:mm A')
         });
     });
+    console.log(dformat(new Date(), 'hh:mm A'));
+    console.log(timeSlotValues);
     // Asigna timeSlotValues a timeSlot.value
     timeSlot.value = timeSlotValues;
 };
@@ -132,7 +136,7 @@ const isValidData = () => {
 const autoCompletePatients = ref(true);
 onMounted(async () => {
     medico.value = dataDoctorStore.doctor[0];
-    await dataDoctorStore.getDoctorSchedule(medico.value.doctor_id).then((data) => {
+    await dataDoctorStore.getDoctorScheduleAvailable(medico.value.doctor_id).then((data) => {
         schedules.value = data.map((schedule) => {
             let startTime = dformat(schedule.startTime, 'hh:mm A');
             let endTime = dformat(schedule.endTime, 'hh:mm A');

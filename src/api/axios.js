@@ -28,7 +28,7 @@ instance.interceptors.response.use(
     },
     function (error) {
         let errData = {
-            message: error.message || error.response.data.message,
+            message: error.response.data.message || error.message,
             status_code: 'offline',
             success: false,
             details: null,

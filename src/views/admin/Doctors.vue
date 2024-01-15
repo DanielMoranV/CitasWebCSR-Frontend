@@ -6,7 +6,6 @@ import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useAuthStore } from '../../stores/auth';
 import { useDataUserStore } from '../../stores/dataUser';
 import { dformat, dparse } from '../../utils/day';
-import * as XLSX from 'xlsx';
 import { useRouter } from 'vue-router';
 import cache from '../../utils/cache';
 
@@ -60,9 +59,6 @@ const nextSchedule = (dataDoctor) => {
     router.push('/timetable');
 };
 
-const roleNames = ref({
-    3: 'Médico'
-});
 const isValidDni = (value) => {
     if (user.value.user.documentType === 'DNI') {
         // Para DNI, verificar que solo contiene 8 dígitos de 0-9
@@ -86,14 +82,12 @@ const isValidPhone = (value) => {
 onBeforeMount(() => {
     initFilters();
 });
-const filename = `listcolaborator-${dformat(new Date(), 'DD-MM-YYYY')}`;
+const filename = `listamedicos-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
     await dataDoctorStore.getDoctors().then((data) => {
         users.value = data.map((user) => {
             let birthDate = dformat(user.user.birthDate, 'DD MMMM YYYY');
             user.user.birthDate = birthDate;
-            // Agrega el campo roleName basado en roleId
-            user.roleName = roleNames.value[user.roleId];
             return user;
         });
     });
@@ -194,7 +188,6 @@ const updateUser = async () => {
             payload.Doctor.personalizedPrices[0].doctorId = user.value.user.Doctor.doctorId;
             await dataUserStore.updateDoctor(payload.dni, payload.access.accessId, payload.Doctor.doctorId, payload.Doctor.personalizedPrices[0].personalizedPriceId, payload);
 
-            user.value.roleName = roleNames.value[user.value.roleId];
             users.value[userIndex] = user.value;
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Actualizado', life: 3000 });
         }
@@ -206,7 +199,6 @@ const updateUser = async () => {
             return;
         } else {
             user.value.accessId = dataUser.access[0].accessId;
-            user.value.roleName = roleNames.value[dataUser.access[0].roleId];
             user.value.status = 'offline';
             users.value.push(user.value);
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Registrado', life: 3000 });
@@ -256,25 +248,6 @@ const deleteUser = async () => {
 const exportCSV = () => {
     dt.value.exportCSV();
 };
-const onUpload = (event) => {
-    const file = event.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-
-        const worksheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[worksheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        // Ahora jsonData contiene los datos del archivo Excel en formato JSON
-        console.log(jsonData);
-    };
-
-    reader.readAsArrayBuffer(file);
-};
 
 const confirmDeleteSelected = () => {
     deleteUsersDialog.value = true;
@@ -312,17 +285,7 @@ const initFilters = () => {
                     </template>
 
                     <template v-slot:end>
-                        <FileUpload
-                            mode="basic"
-                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            :auto="true"
-                            :maxFileSize="1000000"
-                            label="Importar"
-                            chooseLabel="Importar"
-                            class="mr-2 inline-block"
-                            @upload="onUpload"
-                        />
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 
@@ -369,15 +332,9 @@ const initFilters = () => {
                             {{ slotProps.data.user.surnames }}
                         </template>
                     </Column>
-                    <Column field="roleName" header="Rol" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Rol</span>
-                            {{ slotProps.data.roleName }}
-                        </template>
-                    </Column>
                     <Column field="user.doctors.specialization" header="Especialidad" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Rol</span>
+                            <span class="p-column-title">Especialidad</span>
                             {{ slotProps.data.user.Doctor.specialization }}
                         </template>
                     </Column>

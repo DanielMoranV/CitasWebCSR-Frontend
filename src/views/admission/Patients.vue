@@ -6,7 +6,6 @@ import { useDataUserStore } from '../../stores/dataUser';
 import { useAuthStore } from '../../stores/auth';
 import { dformat, dparse, dparseFromFormat } from '../../utils/day';
 import { updateDependent } from '../../api';
-import * as XLSX from 'xlsx';
 
 const toast = useToast();
 const authStore = useAuthStore();
@@ -78,7 +77,7 @@ const isValidDni = (value) => {
 onBeforeMount(() => {
     initFilters();
 });
-const filename = `listpatients-${dformat(new Date(), 'DD-MM-YYYY')}`;
+const filename = `listapacientes-${dformat(new Date(), 'DD-MM-YYYY')}`;
 onMounted(async () => {
     await dataUserStore.getPatients().then((data) => {
         users.value = data.flatMap((user) => {
@@ -215,26 +214,6 @@ const exportCSV = () => {
     dt.value.exportCSV();
 };
 
-const onUpload = (event) => {
-    const file = event.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-
-        const worksheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[worksheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        // Ahora jsonData contiene los datos del archivo Excel en formato JSON
-        console.log(jsonData);
-    };
-
-    reader.readAsArrayBuffer(file);
-};
-
 const confirmDeleteSelected = () => {
     deleteUsersDialog.value = true;
 };
@@ -272,17 +251,7 @@ const initFilters = () => {
                     </template>
 
                     <template v-slot:end>
-                        <FileUpload
-                            mode="basic"
-                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            :auto="true"
-                            :maxFileSize="1000000"
-                            label="Importar"
-                            chooseLabel="Importar"
-                            class="mr-2 inline-block"
-                            @upload="onUpload"
-                        />
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 

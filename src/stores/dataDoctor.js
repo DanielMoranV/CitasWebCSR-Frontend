@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import cache from '../utils/cache';
-import { apiGetInfoDoctors, apiGetInfoDoctor, apiGetDoctors, apiGetDoctorSchedule, apiCreatetDoctorSchedule, apiUpdateSchedule } from '../api';
+import { apiGetInfoDoctors, apiGetInfoDoctor, apiGetDoctors, apiGetDoctorSchedule, apiCreatetDoctorSchedule, apiUpdateSchedule, apiGetDoctorScheduleAvailable } from '../api';
 
 export const useDataDoctorStore = defineStore({
     id: 'doctors',
@@ -55,6 +55,16 @@ export const useDataDoctorStore = defineStore({
         async getDoctorSchedule(doctorId) {
             try {
                 const { data } = await apiGetDoctorSchedule(doctorId);
+                cache.setItem('schedule', data);
+                this.schedule = data;
+                return this.schedule;
+            } catch (error) {
+                this.msgError = error;
+            }
+        },
+        async getDoctorScheduleAvailable(doctorId) {
+            try {
+                const { data } = await apiGetDoctorScheduleAvailable(doctorId);
                 cache.setItem('schedule', data);
                 this.schedule = data;
                 return this.schedule;
