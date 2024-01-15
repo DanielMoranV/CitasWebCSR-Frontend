@@ -4,7 +4,7 @@ import { ref, onMounted, onBeforeMount, computed, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDataUserStore } from '../../stores/dataUser';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
-import { dformat, dparse } from '../../utils/day';
+import { dformat } from '../../utils/day';
 import cache from '../../utils/cache';
 //import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
@@ -21,12 +21,14 @@ const daysSchedule = ref(null);
 const users = ref(null);
 const user = ref({});
 const userDialog = ref(false);
+const timeSlotDialog = ref(false);
 const deleteUserDialog = ref(false);
 const deleteUsersDialog = ref(false);
 const selectedUsers = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
+const availableScheduleDialog = ref(false);
 
 onBeforeMount(() => {
     initFilters();
@@ -157,7 +159,10 @@ const editUser = (editschedule) => {
     daysSchedule.value = schedule.value.day;
     userDialog.value = true;
 };
-
+const editTimeSlot = (timeSlot) => {
+    schedule.value = { ...timeSlot };
+    timeSlotDialog.value = true;
+};
 const confirmDeleteUser = (editUser) => {
     user.value = editUser;
     deleteUserDialog.value = true;
@@ -216,9 +221,22 @@ const onUpload = (event) => {
 const confirmDeleteSelected = () => {
     deleteUsersDialog.value = true;
 };
+const confirmAvailableSchedule = (data) => {
+    console.log(data);
+    schedule.value = data;
+    availableScheduleDialog.value = true;
+};
+const editAvalibleSchedule = async (schedule) => {
+    console.log(schedule);
+    let payload = {
+        availableSchedule: schedule.availableSchedule
+    };
+    await dataDoctorStore.updateSchedule(schedule.scheduleId, payload);
+    availableScheduleDialog.value = false;
+};
 const deleteSelectedUsers = () => {
     users.value = users.value.filter((val) => !selectedUsers.value.includes(val));
-    const selectedIds = selectedUsers.value.map((user) => user.accessId);
+    const selectedIds = selectedUsers.value.map((user) => user.scheduleId);
 
     selectedIds.forEach(async (accessId) => {
         await dataUserStore.disableUser(accessId);
@@ -244,7 +262,7 @@ const initFilters = () => {
                     <template v-slot:start>
                         <div class="my-2">
                             <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Deshabilitar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
+                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
                         </div>
                     </template>
 
@@ -267,8 +285,8 @@ const initFilters = () => {
                     ref="dt"
                     :value="schedules"
                     v-model:selection="selectedUsers"
-                    dataKey="schedulesId"
-                    selectionMode="single"
+                    dataKey="scheduleId"
+                    selectionMode="multiple"
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
@@ -280,7 +298,7 @@ const initFilters = () => {
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Gestión de Horarios Dr {{ nameDoctor }}</h5>
+                            <h5 class="m-0">Gestión de Horarios Dr. {{ nameDoctor }}</h5>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />
@@ -289,9 +307,9 @@ const initFilters = () => {
                     </template>
 
                     <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                    <Column field="day" header="Día" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="day" header="Fecha" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Día</span>
+                            <span class="p-column-title">Fecha</span>
                             {{ dformat(slotProps.data.day, 'DD MMMM YYYY') }}
                         </template>
                     </Column>
@@ -307,23 +325,22 @@ const initFilters = () => {
                             {{ slotProps.data.endTime }}
                         </template>
                     </Column>
-                    <Column field="capacity" header="Capacidad" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="capacity" header="Turnos" :sortable="true" headerStyle="width:10%; min-width:5rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Capacidad</span>
+                            <span class="p-column-title">Turnos</span>
                             {{ slotProps.data.capacity }}
                         </template>
                     </Column>
-                    <Column field="availableSchedule" header="Habilitado" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="availableSchedule" header="Habilitado" :sortable="true" headerStyle="width:8%; min-width:5rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Habilitado</span>
-                            <InputSwitch v-model="slotProps.data.availableSchedule" />
+                            <InputSwitch v-model="slotProps.data.availableSchedule" @change="confirmAvailableSchedule(slotProps.data)" />
                         </template>
                     </Column>
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-primary mr-2" @click="editUser(slotProps.data)" />
-                            <Button v-if="slotProps.data.availableSchedule" icon="pi pi-ban" class="p-button-rounded p-button-warning mt-2 mr-2" @click="confirmDisableUser(slotProps.data)" />
-                            <Button v-if="!slotProps.data.availableSchedule" icon="pi pi-check" class="p-button-rounded p-button-success mt-2 mr-2" @click="confirmEnableUser(slotProps.data)" />
+                            <Button icon="pi pi-eye" class="p-button-rounded p-button-success mr-2" @click="editTimeSlot(slotProps.data)" />
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDeleteUser(slotProps.data)" />
                         </template>
                     </Column>
@@ -380,11 +397,32 @@ const initFilters = () => {
                         <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveUser" />
                     </template>
                 </Dialog>
+                <Dialog v-model:visible="timeSlotDialog" :style="{ width: '500px' }" header="Turnos de consulta" :modal="true" class="p-fluid">
+                    <DataTable :value="schedule.timeSlot" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 25rem">
+                        <Column field="nTurn" header="Turno" style="width: 5%"></Column>
+                        <Column field="orderlyTurn" header="Fecha" style="width: 45%">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Turno</span>
+                                {{ dformat(slotProps.data.orderlyTurn, 'DD MMMM YYYY') }}
+                            </template>
+                        </Column>
+                        <Column field="availableTurn" header="Estado" style="width: 50%">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Estado</span>
+                                {{ slotProps.data.availableTurn ? 'Libre' : 'En Consulta' }}
+                            </template>
+                        </Column>
+                    </DataTable>
+                    <template #footer>
+                        <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
+                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveUser" />
+                    </template>
+                </Dialog>
 
                 <Dialog v-model:visible="deleteUserDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="user"
+                        <span v-if="schedule"
                             >¿Estás seguro de que quieres eliminar <b>{{ user.user.name }}</b
                             >?</span
                         >
@@ -395,7 +433,21 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="deleteUsersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                <Dialog v-model:visible="availableScheduleDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                    <div class="flex align-items-center justify-content-center">
+                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                        <span v-if="schedule"
+                            >¿Estás seguro de querer {{ schedule.availableSchedule ? 'habilitar' : 'deshabilitar' }} este horario del día <b>{{ dformat(schedule.day, 'DD MMMM YYYY') }}</b
+                            >?</span
+                        >
+                    </div>
+                    <template #footer>
+                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="(availableScheduleDialog = false), (schedule.availableSchedule = !schedule.availableSchedule)" />
+                        <Button label="Si" icon="pi pi-check" class="p-button-text" @click="editAvalibleSchedule(schedule)" />
+                    </template>
+                </Dialog>
+
+                <Dialog v-model:visible="deleteUsersDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="user">¿Está seguro de que desea eliminar los usuarios seleccionados?</span>

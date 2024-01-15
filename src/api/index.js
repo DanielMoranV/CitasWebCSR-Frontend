@@ -32,6 +32,7 @@ export const apiUpdateDoctor = (doctorId, payload) => axios.put(`/doctors/${doct
 export const apiUpdatePersonalizedPrice = (personalizedPriceId, payload) => axios.put(`/doctors/personalizedPrice/${personalizedPriceId}`, payload);
 export const apiGetDoctorSchedule = (doctorId) => axios.get(`doctors/${doctorId}/schedule`);
 export const apiCreatetDoctorSchedule = (payload) => axios.post(`doctors/schedule`, payload);
+export const apiUpdateSchedule = (scheduleId, payload) => axios.patch(`doctors/schedule/${scheduleId}/`, payload);
 
 // DEPENDIENTES
 export const getDependents = (userdni) => axios.get(`/users/${userdni}/dependents`);

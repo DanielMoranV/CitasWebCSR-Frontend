@@ -28,7 +28,7 @@ instance.interceptors.response.use(
     },
     function (error) {
         let errData = {
-            message: error.response.data.message || error.message,
+            message: error.message || error.response.data.message,
             status_code: 'offline',
             success: false,
             details: null,
@@ -36,7 +36,6 @@ instance.interceptors.response.use(
         };
         if (error.response.me) {
             errData = error.response.data;
-
             if ([401, 403].indexOf(error.response.status) !== -1) {
                 console.log('if', errData);
             }

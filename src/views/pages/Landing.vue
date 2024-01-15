@@ -5,8 +5,10 @@ import AppConfig from '@/layout/AppConfig.vue';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { useRouter } from 'vue-router';
 import { backendURL } from '../../config';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
+const toast = useToast();
 const dataDoctorStore = useDataDoctorStore();
 const { layoutConfig } = useLayout();
 const responsiveOptions = ref([
@@ -55,6 +57,8 @@ onMounted(async () => {
             doctor.urlProfilePhoto = `${backendURL}/api/v1/imgusers/photoprofile/image/${doctor.photo}/profile`;
             return doctor;
         });
+    } else {
+        toast.add({ severity: 'error', summary: '¡Ops! Parece que nuestro servidor backend está temporalmente desconectado. Por favor, vuelva a intentarlo en unos momentos. Gracias por su comprensión.', life: 6000 });
     }
 });
 </script>
@@ -119,7 +123,8 @@ onMounted(async () => {
                         <h2 class="text-900 font-normal mb-2">Nuestros médicos</h2>
                         <span class="text-600 text-2xl">Contamos con los mejores profesionales para cuidar de ti y tu familia. ¡Agenda una cita hoy mismo!</span>
                     </div>
-                    <Carousel :value="infoDoctors" :numVisible="3" :numScroll="1" :responsiveOptions="responsiveOptions" :autoplayInterval="3000">
+                    <Toast />
+                    <Carousel v-if="infoDoctors" :value="infoDoctors" :numVisible="3" :numScroll="1" :responsiveOptions="responsiveOptions" :autoplayInterval="3000">
                         <template #item="slotProps">
                             <div class="border-1 surface-border border-round m-2 text-center py-5 px-3">
                                 <div class="mb-3">
