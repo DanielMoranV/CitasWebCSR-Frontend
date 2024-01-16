@@ -57,8 +57,6 @@ const handleDateChange = (newDate) => {
         return itemDate === formattedNewDate;
     });
     console.log(filteredSchedules);
-
-    // Ahora, filteredSchedules contiene los elementos de schedule.value que coinciden con la nueva fecha
     const timeSlotValues = [];
     filteredSchedules[0].timeSlot.forEach((slot) => {
         timeSlotValues.push({
