@@ -45,7 +45,6 @@ export const useAuthStore = defineStore({
         async login(payload) {
             try {
                 const { data } = await sigin(payload);
-                console.log(data);
                 cache.setItem('user', data);
                 this.user = data;
                 this.sessionUser = true;
@@ -113,7 +112,8 @@ export const useAuthStore = defineStore({
                 this.urlProfilePhoto = url;
                 return url;
             } catch (error) {
-                console.log(error);
+                this.msg = error;
+                return this.msg;
             }
         }
         // buscar si el dni existe

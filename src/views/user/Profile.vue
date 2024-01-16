@@ -122,7 +122,8 @@ onMounted(async () => {
             <div class="card p-fluid">
                 <div class="text-center mb-5">
                     <div class="text-900 text-3xl font-medium mb-3">Foto de perfil</div>
-                    <Image :src="urlProfilePhoto" alt="Image" width="150" preview />
+                    <Image v-if="!urlProfilePhoto.message" :src="urlProfilePhoto" alt="Image" width="150" preview />
+                    <span v-if="urlProfilePhoto.message"> Actualiza tu foto de perfil</span>
                     <Toast />
                     <FileUpload class="mt-2" mode="basic" name="profilePhoto" :url="urlUpdatePhotoProfile" @before-send="beforeUpload" accept="image/*" :maxFileSize="1000000" @upload="onUpload" />
                 </div>
