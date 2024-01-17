@@ -17,6 +17,7 @@ const nameDoctor = ref(null);
 const dataDoctor = ref(null);
 const schedules = ref(null);
 const schedule = ref(null);
+const timeSlot = ref(null);
 const daysSchedule = ref(null);
 const users = ref(null);
 const user = ref({});
@@ -29,6 +30,7 @@ const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
 const availableScheduleDialog = ref(false);
+const availableTimeSlotDialog = ref(false);
 
 onBeforeMount(() => {
     initFilters();
@@ -205,9 +207,13 @@ const confirmDeleteSelected = () => {
     deleteUsersDialog.value = true;
 };
 const confirmAvailableSchedule = (data) => {
-    console.log(data);
     schedule.value = data;
     availableScheduleDialog.value = true;
+};
+const confirmAvailableTimeSlot = (data) => {
+    console.log(data);
+    //schedule.value.timeSlot = data;
+    availableTimeSlotDialog.value = true;
 };
 const editAvalibleSchedule = async (schedule) => {
     console.log(schedule);
@@ -382,6 +388,7 @@ const initFilters = () => {
                 </Dialog>
                 <Dialog v-model:visible="timeSlotDialog" :style="{ width: '500px' }" header="Turnos de consulta" :modal="true" class="p-fluid">
                     <h5>{{ dformat(schedule.day, 'DD MMMM YYYY') }}</h5>
+                    <p class="text-yellow-600">Se debe liberar un turno previo aviso al paciente</p>
                     <DataTable :value="schedule.timeSlot" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 25rem">
                         <Column field="nTurn" header="Turno" style="width: 5%"></Column>
                         <Column field="orderlyTurn" header="Hora" style="width: 20%">
@@ -399,7 +406,7 @@ const initFilters = () => {
                         <Column field="availableTurn" header="Estado" style="width: 25%">
                             <template #body="slotProps">
                                 <span class="p-column-title">Estado</span>
-                                <InputSwitch v-model="slotProps.data.availableTurn" @change="confirmAvailableSchedule(slotProps.data)" />
+                                <InputSwitch v-model="slotProps.data.availableTurn" @change="confirmAvailableTimeSlot(slotProps.data)" />
                             </template>
                         </Column>
                     </DataTable>
@@ -433,6 +440,19 @@ const initFilters = () => {
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="(availableScheduleDialog = false), (schedule.availableSchedule = !schedule.availableSchedule)" />
+                        <Button label="Si" icon="pi pi-check" class="p-button-text" @click="editAvalibleSchedule(schedule)" />
+                    </template>
+                </Dialog>
+                <Dialog v-model:visible="availableTimeSlotDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                    <div class="flex align-items-center justify-content-center">
+                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                        <span v-if="schedule"
+                            >¿Estás seguro de querer <b>{{ schedule.timeSlot.availableTurn ? 'habilitar' : 'deshabilitar' }}</b> {{ schedule }} este horario del día <b>{{ dformat(schedule.day, 'DD MMMM YYYY') }}</b
+                            >?</span
+                        >
+                    </div>
+                    <template #footer>
+                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="(availableTimeSlotDialog = false), (schedule.timeSlot.availableTurn = !schedule.timeSlot.availableTurn)" />
                         <Button label="Si" icon="pi pi-check" class="p-button-text" @click="editAvalibleSchedule(schedule)" />
                     </template>
                 </Dialog>

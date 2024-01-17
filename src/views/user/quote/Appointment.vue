@@ -30,12 +30,14 @@ const formattedAvailableSchedule = ref([]);
 const medico = ref([]);
 const date = ref();
 const selectedDate = ref(null);
-const today = new Date();
+const startDay = ref(new Date());
 const daysToAdd = 29;
 
+// Calular las fechas a partir de mañana
+startDay.value.setDate(startDay.value.getDate() + 1);
 // Calcula la fecha una semana después de hoy
-const oneWeekLater = new Date(today);
-oneWeekLater.setDate(today.getDate() + daysToAdd);
+const endDay = new Date(startDay);
+endDay.setDate(startDay.value.getDate() + daysToAdd);
 
 const formattedDate = computed(() => {
     return (date) => {
@@ -48,7 +50,6 @@ const formattedDate = computed(() => {
 
 // Función que se ejecutará cuando date cambie
 const handleDateChange = (newDate) => {
-    console.log(newDate);
     // Realiza alguna acción en respuesta al cambio de fecha
     const formattedNewDate = dformat(newDate, 'YYYY-MM-DD');
     // Filtra los elementos de schedule.value que coincidan con la nueva fecha
@@ -56,7 +57,6 @@ const handleDateChange = (newDate) => {
         const itemDate = dformat(new Date(item.day), 'YYYY-MM-DD');
         return itemDate === formattedNewDate;
     });
-    console.log(filteredSchedules);
     const timeSlotValues = [];
     filteredSchedules[0].timeSlot.forEach((slot) => {
         timeSlotValues.push({
@@ -64,8 +64,6 @@ const handleDateChange = (newDate) => {
             name: dformat(slot.orderlyTurn, 'hh:mm A')
         });
     });
-    console.log(dformat(new Date(), 'hh:mm A'));
-    console.log(timeSlotValues);
     // Asigna timeSlotValues a timeSlot.value
     timeSlot.value = timeSlotValues;
 };
@@ -147,7 +145,7 @@ onMounted(async () => {
 
     // Crea un array de fechas desde today hasta oneWeekLater
     const dateArray = [];
-    for (let fecha = new Date(today); fecha <= oneWeekLater; fecha.setDate(fecha.getDate() + 1)) {
+    for (let fecha = new Date(startDay.value); fecha <= endDay; fecha.setDate(fecha.getDate() + 1)) {
         dateArray.push(new Date(fecha));
     }
     // Formatea las fechas en availableSchedule para que coincidan con el formato de dateArray
@@ -182,7 +180,7 @@ onMounted(async () => {
         <i class="pi pi-fw pi-check mr-2 text-2xl" />
         <p class="m-0 text-lg">Médico: {{ medico.medico }}</p>
     </div>
-
+    <p class="text-yellow-500 font-medium text-xl">Las citas del dia {{ dformat(new Date(), 'DD/MM/YYYY') }} se recervan via Call Center llamado al 985586350</p>
     <div class="card p-fluid">
         <h6>Especialidad: {{ medico.specialization }}</h6>
 
@@ -197,7 +195,7 @@ onMounted(async () => {
         <div class="field grid">
             <label for="date" class="col-12 mb-2 md:col-2 md:mb-0">Fecha</label>
             <div class="col-12 md:col-10">
-                <Calendar placeholder="Días disponibles" :showIcon="true" v-model="date" :manualInput="false" :minDate="today" :maxDate="oneWeekLater" :disabledDates="disabledDates">
+                <Calendar placeholder="Días disponibles" :showIcon="true" v-model="date" :manualInput="false" :minDate="startDay" :maxDate="endDay" :disabledDates="disabledDates">
                     <template #date="slotProps">
                         <div v-if="formattedAvailableSchedule.includes(formattedDate(slotProps.date))" style="padding: 50%; color: green; font-size: 1.1em; background-color: lightgreen; border-radius: 50%" class="available-date">
                             {{ slotProps.date.day }}

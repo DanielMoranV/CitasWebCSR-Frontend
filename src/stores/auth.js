@@ -34,10 +34,11 @@ export const useAuthStore = defineStore({
     actions: {
         async searchbydni(dni) {
             try {
-                //const data = await axios.get(`https://api-utilidades.serveo.net/api/v1/users/searchbydni/${dni}`);
-                //return data.data.data;
-                const data = await searchbydni(dni);
-                return data.data;
+                //const data = await axios.get(`https://api-utilidades.serveo.net/api/v1/users/searchbydni/${dni}`)
+                const data = await axios.get(`https://support-csr.serveo.net/api/v1/utilidades/consultadni/${dni}`);
+                return data.data.data;
+                // const data = await searchbydni(dni);
+                // return data.data;
             } catch (error) {
                 console.log(error);
             }
