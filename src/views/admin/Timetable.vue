@@ -6,8 +6,6 @@ import { useDataUserStore } from '../../stores/dataUser';
 import { useDataDoctorStore } from '../../stores/dataDoctor';
 import { dformat } from '../../utils/day';
 import cache from '../../utils/cache';
-//import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
 
 const toast = useToast();
 const dataUserStore = useDataUserStore();
@@ -106,34 +104,20 @@ const validateRequiredFields = () => {
 };
 
 const updateSchedule = async () => {
-    if (schedule.value.scheduleId) {
-        // const userIndex = users.value.findIndex((item) => item.accessId === user.value.accessId);
-        // if (userIndex !== -1) {
-        //     payload.access.accessId = user.value.accessId;
-        //     payload.userId = user.value.user.userId;
+    for (const date of daysSchedule.value) {
+        // Crea un nuevo objeto schedule para cada fecha
+        const newSchedule = {
+            ...schedule.value,
+            startTime: new Date(date.setHours(schedule.value.startTime.getHours(), schedule.value.startTime.getMinutes())),
+            endTime: new Date(date.setHours(schedule.value.endTime.getHours(), schedule.value.endTime.getMinutes())),
+            day: date // Asigna la fecha a day
+        };
 
-        //     await dataUserStore.updateUser(payload.dni, payload.access.accessId, payload);
-
-        //     user.value.roleName = roleNames.value[user.value.roleId];
-        //     users.value[userIndex] = user.value;
-        //     toast.add({ severity: 'success', summary: 'Éxito', detail: 'Colaborador Actualizado', life: 3000 });
-        // }
-        console.log('voy a editar');
-    } else {
-        for (const date of daysSchedule.value) {
-            // Crea un nuevo objeto schedule para cada fecha
-            const newSchedule = {
-                ...schedule.value,
-                startTime: new Date(date.setHours(schedule.value.startTime.getHours(), schedule.value.startTime.getMinutes())),
-                endTime: new Date(date.setHours(schedule.value.endTime.getHours(), schedule.value.endTime.getMinutes())),
-                day: date // Asigna la fecha a day
-            };
-
-            // Envía newSchedule al servidor para guardarlo en la base de datos
-            await dataDoctorStore.addDoctorSchedule(newSchedule);
-        }
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dias y turnos de citas generados correctamente', life: 3000 });
+        // Envía newSchedule al servidor para guardarlo en la base de datos
+        await dataDoctorStore.addDoctorSchedule(newSchedule);
     }
+    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Dias y turnos de citas generados correctamente', life: 3000 });
+
     await dataDoctorStore.getDoctorSchedule(dataDoctor.value.user.Doctor.doctorId).then((data) => {
         schedules.value = data.map((schedule) => {
             let startTime = dformat(schedule.startTime, 'hh:mm A');
@@ -181,26 +165,6 @@ const deleteUser = async () => {
 const exportCSV = () => {
     console.log(dt.value);
     dt.value.exportCSV();
-};
-
-const onUpload = (event) => {
-    const file = event.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-
-        const worksheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[worksheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        // Ahora jsonData contiene los datos del archivo Excel en formato JSON
-        console.log(jsonData);
-    };
-
-    reader.readAsArrayBuffer(file);
 };
 
 const confirmDeleteSelected = () => {
@@ -251,22 +215,12 @@ const initFilters = () => {
                     <template v-slot:start>
                         <div class="my-2">
                             <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
+                            <!-- <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" /> -->
                         </div>
                     </template>
 
                     <template v-slot:end>
-                        <FileUpload
-                            mode="basic"
-                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            :auto="true"
-                            :maxFileSize="1000000"
-                            label="Importar"
-                            chooseLabel="Importar"
-                            class="mr-2 inline-block"
-                            @upload="onUpload"
-                        />
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 
@@ -295,7 +249,7 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                    <!-- <Column selectionMode="multiple" headerStyle="width: 3rem"></Column> -->
                     <Column field="day" header="Fecha" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Fecha</span>
@@ -314,13 +268,13 @@ const initFilters = () => {
                             {{ slotProps.data.endTime }}
                         </template>
                     </Column>
-                    <Column field="capacity" header="Turnos" :sortable="true" headerStyle="width:10%; min-width:5rem;">
+                    <Column field="capacity" header="Turnos" :sortable="true" headerStyle="width:14%; min-width:5rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Turnos</span>
                             {{ slotProps.data.capacity }}
                         </template>
                     </Column>
-                    <Column field="availableSchedule" header="Habilitado" :sortable="true" headerStyle="width:8%; min-width:5rem;">
+                    <Column field="availableSchedule" header="Habilitado" :sortable="true" headerStyle="width:14%; min-width:5rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Habilitado</span>
                             <InputSwitch v-model="slotProps.data.availableSchedule" @change="confirmAvailableSchedule(slotProps.data)" />
@@ -328,9 +282,9 @@ const initFilters = () => {
                     </Column>
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-primary mr-2" @click="editUser(slotProps.data)" />
+                            <!-- <Button icon="pi pi-pencil" class="p-button-rounded p-button-primary mr-2" @click="editUser(slotProps.data)" /> -->
                             <Button icon="pi pi-eye" class="p-button-rounded p-button-success mr-2" @click="editTimeSlot(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDeleteUser(slotProps.data)" />
+                            <!-- <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDeleteUser(slotProps.data)" /> -->
                         </template>
                     </Column>
                 </DataTable>
@@ -388,7 +342,7 @@ const initFilters = () => {
                 </Dialog>
                 <Dialog v-model:visible="timeSlotDialog" :style="{ width: '500px' }" header="Turnos de consulta" :modal="true" class="p-fluid">
                     <h5>{{ dformat(schedule.day, 'DD MMMM YYYY') }}</h5>
-                    <p class="text-yellow-600">Se debe liberar un turno previo aviso al paciente</p>
+                    <p class="text-yellow-600">Se debe liberar un turno previo aviso al paciente, consultar con admisión</p>
                     <DataTable :value="schedule.timeSlot" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 25rem">
                         <Column field="nTurn" header="Turno" style="width: 5%"></Column>
                         <Column field="orderlyTurn" header="Hora" style="width: 20%">
@@ -406,7 +360,7 @@ const initFilters = () => {
                         <Column field="availableTurn" header="Estado" style="width: 25%">
                             <template #body="slotProps">
                                 <span class="p-column-title">Estado</span>
-                                <InputSwitch v-model="slotProps.data.availableTurn" @change="confirmAvailableTimeSlot(slotProps.data)" />
+                                <InputSwitch v-model="slotProps.data.availableTurn" @change="confirmAvailableTimeSlot(slotProps.data)" disabled />
                             </template>
                         </Column>
                     </DataTable>

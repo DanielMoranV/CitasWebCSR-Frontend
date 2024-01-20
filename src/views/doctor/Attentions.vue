@@ -151,9 +151,6 @@ function formatAppointmentList() {
                             <span class="p-column-title">Fecha Consulta</span>
                             {{ dformat(slotProps.data.orderlyTurn, 'DD MMMM YYYY hh:mm a') }}
                         </template>
-                        <template #filter="{ filterModel }">
-                            <Calendar v-model="filterModel.value" dateFormat="dd/mm/yy" placeholder="dd/mm/yyyy" />
-                        </template>
                     </Column>
                     <Column headerStyle="width:10%; min-width:5rem;" header="Acciones">
                         <template #body="slotProps">

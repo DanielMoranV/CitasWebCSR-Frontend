@@ -13,7 +13,8 @@ import {
     getAppointmentDoctorId,
     getAppointmentHistoryUserId,
     createAppointmentHistory,
-    updateAppointmentHistory
+    updateAppointmentHistory,
+    getAppointmentDoctorIdByDay
 } from '../api';
 
 export const useDataAppointmentStore = defineStore({
@@ -98,6 +99,16 @@ export const useDataAppointmentStore = defineStore({
         async getAppointmentDoctorId(userId) {
             try {
                 const { data } = await getAppointmentDoctorId(userId);
+                cache.setItem('appointments', data);
+                this.appointments = data;
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async getAppointmentDoctorIdByDay(userId, day) {
+            try {
+                const { data } = await getAppointmentDoctorIdByDay(userId, day);
                 cache.setItem('appointments', data);
                 this.appointments = data;
                 return data;

@@ -27,6 +27,17 @@ export const useDataUserStore = defineStore('datauserStore', {
         msg: null
     }),
     actions: {
+        async createAccessUser(username, payload) {
+            try {
+                const { data } = await createAccessUser(username, payload);
+                cache.setItem('collaborator', data);
+                this.dataUser = data;
+                return this.dataUser;
+            } catch (error) {
+                this.msg = error;
+                return this.msg;
+            }
+        },
         async getCollaborators() {
             this.loadingDataUser = true;
             try {

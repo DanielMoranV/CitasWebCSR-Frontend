@@ -54,6 +54,7 @@ const sexItems = ref([
     { name: 'Femenino', code: 'Femenino' }
 ]);
 const nextSchedule = (dataDoctor) => {
+    console.log(dataDoctor);
     cache.setItem('doctor', dataDoctor);
 
     router.push('/timetable');
@@ -141,7 +142,18 @@ const hideDialog = () => {
     priceDialog.value = false;
     submitted.value = false;
 };
+const validateAge = (UserBirthDate) => {
+    const today = new Date();
+    const birthDate = new Date(UserBirthDate);
+    const age = today.getFullYear() - birthDate.getFullYear();
 
+    if (age < 18) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Debes ser mayor de edad para registrarte.', life: 3000 });
+        return false; // Detener la función si es menor de edad
+    }
+
+    return true; // Es mayor de edad
+};
 const validateRequiredFields = () => {
     const userValue = user.value.user;
     return userValue.name && userValue.name.trim() && userValue.surnames && userValue.dni && userValue.birthDate && userValue.sex && user.value.user.Doctor.status && isValidDni(userValue.dni), isValidPhone(userValue.phone);
@@ -192,13 +204,16 @@ const updateUser = async () => {
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Actualizado', life: 3000 });
         }
     } else {
+        let roleId = 4;
         const dataUser = await dataUserStore.addUsers(payload);
+        await dataUserStore.createAccessUser(payload.dni, { roleId });
 
         if (dataUser == 'Violación de la restricción única.') {
             toast.add({ severity: 'error', summary: 'Error', detail: 'DNI o CMP ya registrados, corregir', life: 3000 });
             return;
         } else {
             user.value.accessId = dataUser.access[0].accessId;
+            user.value.user.Doctor.doctorId = dataUser.Doctor.doctorId;
             user.value.status = 'offline';
             users.value.push(user.value);
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Registrado', life: 3000 });
@@ -215,11 +230,12 @@ const updateUser = async () => {
 
 const saveUser = async () => {
     submitted.value = true;
-
-    if (validateRequiredFields()) {
-        updateUser();
-    } else {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Datos imcompletos por favor llenar todo el formulario', life: 3000 });
+    if (validateAge(user.value.user.birthDate)) {
+        if (validateRequiredFields()) {
+            updateUser();
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Ingresar todos los datos correctamente', life: 3000 });
+        }
     }
 };
 

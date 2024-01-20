@@ -51,6 +51,7 @@ export const createappointment = (payload) => axios.post('/appointment', payload
 export const getAppointmentId = (appointmentId) => axios.get(`/appointment/${appointmentId}`);
 export const getAppointmentUserId = (userId) => axios.get(`/appointment/user/${userId}`);
 export const getAppointmentDoctorId = (doctorId) => axios.get(`/appointment/doctor/${doctorId}`);
+export const getAppointmentDoctorIdByDay = (doctorId, day) => axios.get(`/appointment/doctorbyday/${doctorId}/${day}`);
 export const getAppointment = () => axios.get(`/appointment`);
 export const deleteAppointment = (appointmentId) => axios.delete(`/appointment/${appointmentId}`);
 export const updateAppointmentId = (appointmentId, payload) => axios.put(`/appointment/${appointmentId}`, payload);

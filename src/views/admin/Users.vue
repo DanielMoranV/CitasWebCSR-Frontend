@@ -163,6 +163,9 @@ const updateUser = async () => {
         }
     } else {
         const dataUser = await dataUserStore.addUsers(payload);
+        let roleId = 4;
+        await dataUserStore.createAccessUser(payload.dni, { roleId });
+
         user.value.accessId = dataUser.access[0].accessId;
         user.value.roleName = roleNames.value[user.value.roleId];
         user.value.status = 'offline';
@@ -178,15 +181,28 @@ const updateUser = async () => {
     };
     submitted.value = false;
 };
+const validateAge = (UserBirthDate) => {
+    const today = new Date();
+    const birthDate = new Date(UserBirthDate);
+    const age = today.getFullYear() - birthDate.getFullYear();
 
+    if (age < 18) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Debes ser mayor de edad para registrarte.', life: 3000 });
+        return false; // Detener la función si es menor de edad
+    }
+
+    return true; // Es mayor de edad
+};
 const saveUser = async () => {
     submitted.value = true;
-
-    if (validateRequiredFields()) {
-        updateUser();
+    if (validateAge(user.value.user.birthDate)) {
+        if (validateRequiredFields()) {
+            updateUser();
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Ingresar todos los datos correctamente', life: 3000 });
+        }
     }
 };
-
 const editUser = (editUser) => {
     user.value = { ...editUser };
     userDialog.value = true;

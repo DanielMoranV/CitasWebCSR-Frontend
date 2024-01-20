@@ -27,6 +27,8 @@ const autoCompletePatients = ref(true);
 const listPatients = ref(null);
 const patients = ref(null);
 const selectedPatient = ref(null);
+const selectedDoctor = ref(null);
+const selectedDay = ref(new Date());
 const autoFilteredPatientValue = ref([]);
 const buttonPaymentDisabled = ref(true);
 const todayCashRegister = ref(null);
@@ -51,7 +53,12 @@ const searchPatient = (event) => {
 watch(selectedPatient, (newSelectedPatient) => {
     if (newSelectedPatient != null) buttonPaymentDisabled.value = false;
 });
-
+const searchShifts = async (selectedDoctor, selectedDay) => {
+    console.log(selectedDoctor.user.Doctor.doctorId, selectedDay);
+    console.log(await dataAppointmentStore.getAppointmentDoctorIdByDay(selectedDoctor.user.Doctor.doctorId, dformat(selectedDay, 'YYYY-MM-DD')));
+    appointmentLists.value = await dataAppointmentStore.getAppointmentDoctorIdByDay(selectedDoctor.user.Doctor.doctorId, dformat(selectedDay, 'YYYY-MM-DD'));
+    formatAppointmentList();
+};
 onMounted(async () => {
     await dataDoctorStore.getDoctors().then((data) => {
         listDoctors.value = data.map((user) => {
@@ -59,9 +66,8 @@ onMounted(async () => {
             return user;
         });
     });
-
-    appointmentLists.value = await dataAppointmentStore.getAppointment();
-    formatAppointmentList();
+    // appointmentLists.value = await dataAppointmentStore.getAppointment();
+    // formatAppointmentList();
 
     loading.value = false;
 
@@ -142,6 +148,7 @@ function formatAppointmentList() {
         appointment.specialization = appointment.Schedule.doctor.specialization;
         appointment.nameDoctor = `${appointment.Schedule.doctor.user.surnames} ${appointment.Schedule.doctor.user.name}`;
         appointment.price = appointment.Schedule.doctor.personalizedPrices[0].personalizedPrice;
+        //appointment.status = String(appointment.Schedule.availableSchedule);
         if (appointment.Appointment[0]) {
             appointment.status = appointment.Appointment[0].status;
             appointment.origin = appointment.Appointment[0].origin;
@@ -211,11 +218,13 @@ function createAppointmentPayload() {
             <div class="card">
                 <Toast />
                 <Toolbar class="mb-4">
-                    <!-- <template v-slot:start>
+                    <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Agendar Cita Médica" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Dropdown v-model="selectedDoctor" :options="listDoctors" optionLabel="name" placeholder="Seleccionar Médico" class="w-full md:w-14rem mr-4" />
+                            <Calendar v-model="selectedDay" class="mr-4 mt-4 md:mt-0" />
+                            <Button label="Buscar" icon="pi pi-search" class="p-button-success mr-2 mt-4 md:mt-0" @click="searchShifts(selectedDoctor, selectedDay)" />
                         </div>
-                    </template> -->
+                    </template>
 
                     <template v-slot:end>
                         <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
@@ -268,19 +277,10 @@ function createAppointmentPayload() {
                             <span :class="'user-badge status-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status || 'Disponible' }}</span>
                         </template>
                     </Column>
-                    <Column field="nameDoctor" header="Médico" :sortable="true" :showFilterMatchModes="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="nameDoctor" header="Habilitado" :sortable="true" :showFilterMatchModes="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Médico</span>
-                            {{ slotProps.data.nameDoctor }}
-                        </template>
-                        <template #filter="{ filterModel }">
-                            <MultiSelect v-model="filterModel.value" :options="listDoctors" optionLabel="name" optionValue="name" placeholder="Buscar Por Médico" class="p-column-filter">
-                                <template #option="slotProps">
-                                    <div class="p-multiselect-representative-option">
-                                        <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ slotProps.option.name }}</span>
-                                    </div>
-                                </template>
-                            </MultiSelect>
+                            {{ slotProps.data.Schedule.availableSchedule }}
                         </template>
                     </Column>
                     <Column field="specialization" header="Especialidad" :sortable="true" headerStyle="width:14%; min-width:10rem;">
