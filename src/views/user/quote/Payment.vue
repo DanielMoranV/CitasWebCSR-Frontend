@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useDataAppointmentStore } from '../../../stores/dataAppointment';
@@ -60,9 +60,13 @@ onMounted(async () => {
         VoucherTypeId: documentType.value,
         userId: authStore.user.user.userId
     };
+    window.addEventListener('culqiTokenCreated', handleCulqiToken);
 });
-
-window.addEventListener('culqiTokenCreated', async (event) => {
+onBeforeUnmount(() => {
+    window.removeEventListener('culqiTokenCreated', handleCulqiToken);
+    window.location.reload();
+});
+const handleCulqiToken = async (event) => {
     culqiToken.value = event.detail;
     culqiToken.value.metadata = {};
     culqiToken.value.metadata.appointmentId = dataAppointmentStore.appointment.appointmentId;
@@ -97,7 +101,44 @@ window.addEventListener('culqiTokenCreated', async (event) => {
         Culqi.close();
         setTimeout(() => router.push('/quote/confirmation'), 1000);
     }
-});
+};
+
+// window.addEventListener('culqiTokenCreated', async (event) => {
+//     culqiToken.value = event.detail;
+//     culqiToken.value.metadata = {};
+//     culqiToken.value.metadata.appointmentId = dataAppointmentStore.appointment.appointmentId;
+//     culqiToken.value.metadata.paymentMethodId = 2;
+//     culqiToken.value.metadata.VoucherTypeId = 5;
+//     culqiToken.value.metadata.paymentDate = paymentValues.value.paymentDate;
+//     culqiToken.value.metadata.userId = authStore.user.user.userId;
+//     culqiToken.value.metadata.amount = paymentValues.value.amount * 100;
+//     culqiToken.value.client.address = authStore.user.user.address;
+//     culqiToken.value.client.phone = authStore.user.user.phone;
+//     culqiToken.value.client.name = authStore.user.user.name;
+//     culqiToken.value.client.surnames = authStore.user.user.surnames;
+//     culqiToken.value.dataPayment = {
+//         nameDoctor: appointment.value.doctor.user.name + ' ' + appointment.value.doctor.user.surnames,
+//         specialty: appointment.value.doctor.specialization,
+//         patient: appointment.value.patient,
+//         date: dformat(appointment.value.timeSlot.orderlyTurn, 'DD MMMM YYYY hh:mm A'),
+//         price: appointment.value.doctor.personalizedPrices[0].personalizedPrice
+//     };
+
+//     //En este punto, culqiToken contiene el token y puedes manejarlo
+//     const response = await dataAppointmentStore.addPayment(culqiToken.value);
+//     console.log(response);
+//     if (response.message) {
+//         toast.add({ severity: 'error', summary: 'Error', detail: response.message, life: 4000 });
+//         await dataAppointmentStore.deleteAppointmentId(dataAppointmentStore.appointment.appointmentId);
+//         Culqi.close();
+//         culqiToken.value = {};
+//         setTimeout(() => router.push('/quotes'), 4000);
+//     } else {
+//         toast.add({ severity: 'success', summary: 'Éxito', detail: 'Pago realizado correctamente', life: 4000 });
+//         Culqi.close();
+//         setTimeout(() => router.push('/quote/confirmation'), 1000);
+//     }
+// });
 </script>
 <template>
     <div class="flex align-items-center py-5 px-3">

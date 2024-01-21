@@ -103,6 +103,7 @@ import VirtualScroller from 'primevue/virtualscroller';
 
 import CodeHighlight from '@/components/CodeHighlight.vue';
 import BlockViewer from '@/components/BlockViewer.vue';
+
 import './culqi.js';
 
 import '@/assets/styles.scss';

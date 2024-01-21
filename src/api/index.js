@@ -77,3 +77,6 @@ export const getLastPayment = () => axios.get('/payment/lastpayment');
 
 // Qr Whastapp
 export const getQrWp = () => axios.get('imgqrwp/urlqr/qr.svg');
+
+//Conexiones
+export const connectionWp = () => axios.get('/connection/wp');

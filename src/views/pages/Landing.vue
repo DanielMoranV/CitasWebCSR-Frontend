@@ -123,27 +123,27 @@ onMounted(async () => {
                         <h2 class="text-900 font-normal mb-2">Nuestros médicos</h2>
                         <span class="text-600 text-2xl">Contamos con los mejores profesionales para cuidar de ti y tu familia. ¡Agenda una cita hoy mismo!</span>
                     </div>
-                    <Toast />
-                    <Carousel v-if="infoDoctors" :value="infoDoctors" :numVisible="3" :numScroll="1" :responsiveOptions="responsiveOptions" :autoplayInterval="3000">
-                        <template #item="slotProps">
-                            <div class="border-1 surface-border border-round m-2 text-center py-5 px-3">
-                                <div class="mb-3">
-                                    <img :src="slotProps.data.urlProfilePhoto" :alt="slotProps.data.medico" class="w-2 sm:w-6 shadow-2 profile-img" />
-                                </div>
-                                <div>
-                                    <h4 class="mb-1">{{ slotProps.data.medico }}</h4>
-                                    <h6 class="mt-0 mb-1">{{ slotProps.data.specialization }}</h6>
-                                    <h6 class="mt-0 mb-3">CMP: {{ slotProps.data.cmp }}</h6>
-                                    <h6 class="mt-0 mb-3">Consulta Médica S./ {{ slotProps.data.price }}.00</h6>
-                                    <div class="mt-5 flex align-items-center justify-content-center gap-2">
-                                        <Button label="Agendar Cita" icon="fa-solid fa-user-doctor text-2xl text-white-700" class="col-8 p-button-success mr-2 mb-2" @click="appointment(slotProps.data.cmp)"></Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </Carousel>
                 </div>
             </div>
+            <Toast />
+            <Carousel v-if="infoDoctors" :value="infoDoctors" :numVisible="4" :numScroll="1" :responsiveOptions="responsiveOptions" :autoplayInterval="3000">
+                <template #item="slotProps">
+                    <div class="border-1 surface-border border-round m-2 text-center py-5 px-3">
+                        <div class="mb-3">
+                            <img :src="slotProps.data.urlProfilePhoto" :alt="slotProps.data.medico" class="w-2 sm:w-4 shadow-2 profile-img" />
+                        </div>
+                        <div>
+                            <h4 class="mb-1">{{ slotProps.data.medico }}</h4>
+                            <h6 class="mt-0 mb-1">{{ slotProps.data.specialization }}</h6>
+                            <h6 class="mt-0 mb-3">CMP: {{ slotProps.data.cmp }}</h6>
+                            <h6 class="mt-0 mb-3">Consulta Médica S./ {{ slotProps.data.price }}.00</h6>
+                            <div class="mt-5 flex align-items-center justify-content-center gap-2">
+                                <Button label="Agendar Cita" icon="fa-solid fa-user-doctor text-2xl text-white-700" class="col-8 p-button-success mr-2 mb-2" @click="appointment(slotProps.data.cmp)"></Button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </Carousel>
             <div id="features" class="py-4 px-4 lg:px-8 mt-5 mx-0 lg:mx-8">
                 <div class="grid justify-content-center">
                     <div class="col-12 text-center mt-8 mb-4">
