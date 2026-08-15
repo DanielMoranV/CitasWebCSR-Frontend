@@ -44,7 +44,7 @@ onMounted(async () => {
     script.async = true;
     script.onload = () => {
         // Una vez que el script de Culqi se haya cargado, configura Culqi.settings y CulqiOptions
-        Culqi.publicKey = 'pk_test_73e0f77c30643c37';
+        Culqi.publicKey = import.meta.env.VITE_CULQI_PUBLIC_KEY;
         buttonPaymentDisabled.value = false;
     };
     document.body.appendChild(script);
