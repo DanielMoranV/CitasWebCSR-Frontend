@@ -35,3 +35,11 @@ public/themes/nano/
 
 # Env
 *.env
+
+# Build output
+dist
+
+# Variables de entorno (nunca versionar)
+.env
+.env.*
+!.env.example

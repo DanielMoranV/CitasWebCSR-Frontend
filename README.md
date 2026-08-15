@@ -1,8 +1,14 @@
 # CSR Consultas Web — Frontend
 
-SPA en Vue 3 para la gestión de citas médicas de un centro de salud (CSR): agendamiento y pago de citas para pacientes, atención clínica para médicos, control de turnos/caja para admisión y administración de usuarios, médicos y horarios para el rol Administrador.
+SPA en Vue 3 para la gestión de citas médicas: agendamiento y pago de citas para pacientes, atención clínica para médicos, control de turnos/caja para admisión y administración de usuarios, médicos y horarios para el rol Administrador.
 
-> Repositorio: `DanielMoranV/CitasWebCSR-Frontend` · Backend consumido vía REST (`VITE_API_URL`), no incluido en este repo.
+## Sobre este proyecto
+
+Fue mi **primer encargo como freelance**, desarrollado entre 2023 y 2024 como soporte para el proyecto de tesis de una colega. El caso de uso está modelado sobre una clínica (de ahí el nombre), pero **no es ni fue un sistema de producción de Clínica Santa Rosa**: es un trabajo académico y de aprendizaje, hecho a título personal.
+
+**Estado: archivado, fuera de servicio.** No hay ningún despliegue activo. Se mantiene público como registro de trabajo, junto a su [backend](https://github.com/DanielMoranV/CitasWebCSR-Backend), cuyo README documenta la auditoría de seguridad que hice sobre ambos en 2026.
+
+> Backend consumido vía REST (`VITE_API_URL`), en repositorio aparte.
 
 ## Stack tecnológico
 
@@ -65,7 +71,7 @@ Con base en el historial de commits y las vistas implementadas:
 
 - ✅ Autenticación por rol (Administrador, Admisionista, Médico, Paciente) con guard de rutas.
 - ✅ Flujo completo de agendamiento de citas: especialidad → médico/horario → pago → confirmación.
-- ✅ Integración de pagos con Culqi (checkout v4) en **modo test/sandbox**; falta habilitar credenciales de producción.
+- ✅ Integración de pagos con Culqi (checkout v4) en **modo test/sandbox**. Nunca se habilitaron credenciales de producción: el proyecto no llegó a explotarse comercialmente.
 - ✅ Gestión de turnos y caja para admisión (apertura, movimientos, cierre).
 - ✅ Panel administrativo: usuarios, médicos, horarios de atención con validaciones de disponibilidad.
 - ✅ Notificación/estado de conexión de WhatsApp vía Socket.IO + QR desde el dashboard.
@@ -83,12 +89,13 @@ Se auditó el repositorio en busca de secretos versionados. Hallazgo relevante c
 | Llave pública de Culqi (`pk_test_73e0f77c30643c37`) hardcodeada en `Payment.vue` y en el archivo duplicado `Payment original.vue`. | Baja (las *publishable keys* de Culqi están diseñadas para ser públicas, igual que las de Stripe) | ✅ Movida a `VITE_CULQI_PUBLIC_KEY` en `Payment.vue`; pendiente limpiar el duplicado. |
 | Token de sesión guardado en `localStorage` codificado solo en base64. | Informativo | No corregido en esta tarea (requiere decisión de arquitectura, p. ej. httpOnly cookies). |
 
-**Recomendaciones pendientes (requieren decisión/acción del propietario del repo):**
+**Resolución (2026):**
 
-1. **Rotar** cualquier credencial real de Culqi/backend que haya estado en uso, aunque el `.env` filtrado solo contenía valores de *test*.
-2. **Purgar el historial de Git** (`git filter-repo` o BFG Repo-Cleaner) si se desea eliminar `.env` de los commits antiguos — es una operación destructiva que reescribe hashes y requiere coordinarla con cualquier colaborador/fork; no se ejecutó automáticamente.
-3. Eliminar `src/views/user/quote/Payment original.vue` (código muerto, no referenciado por el router).
-4. Revisar si el túnel `serveo.net` sigue en uso en producción; de ser así, migrar la consulta de DNI a un endpoint propio del backend.
+1. **No hay credenciales que rotar.** El proyecto nunca tuvo despliegue ni credenciales de producción: el `.env` filtrado contenía la URL de un backend hoy inexistente y una *publishable key* de Culqi en modo test, pública por diseño.
+2. **El historial no se purgó.** El `.env` sigue siendo recuperable desde los commits antiguos, y se asume: reescribir el historial es una operación destructiva y lo expuesto no tiene valor. Conviene tenerlo presente como principio general — en un repositorio público, dejar de rastrear un archivo **no lo elimina del historial**; para un secreto real la única contención es repositorio privado más rotación de la credencial.
+3. ✅ **Eliminado** `src/views/user/quote/Payment original.vue` (código muerto no referenciado por el router, que además conservaba la llave de Culqi hardcodeada).
+4. **El túnel `serveo.net` es irrelevante:** no hay producción. La dependencia se documenta como lo que fue — un atajo de desarrollo que, en un proyecto real, debería haber sido un endpoint propio del backend.
+5. ✅ **`dist/` dejó de versionarse.** Había 326 archivos de build commiteados.
 
 ## Configuración del entorno
 
